@@ -1,0 +1,12 @@
+<h2>{{ material.title }}</h2>
+<p>{{ material.description }}</p>
+<a href="{% url 'download_material' material.id %}">Download</a>
+<h3>Reviews</h3>
+{% for review in reviews %}
+    <p>{{ review.user.username }}: {{ review.rating }} stars - {{ review.comment }}</p>
+{% endfor %}
+<form method="POST" action="{% url 'add_review' material.id %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit Review</button>
+</form>

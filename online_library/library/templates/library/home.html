@@ -1,0 +1,5 @@
+{% for material in materials %}
+    <h2><a href="{% url 'material_detail' material.id %}">{{ material.title }}</a></h2>
+    <p>{{ material.description }}</p>
+{% endfor %}
+<a href="{% url 'material_list' %}">View all materials</a>
