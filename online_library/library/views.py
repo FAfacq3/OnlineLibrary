@@ -7,11 +7,17 @@ from .forms import MaterialForm, ReviewForm, SimpleUserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
+from django.db.models import Avg
+
 
 def home(request):
-    materials = Material.objects.all().order_by('-upload_date')[:5]
-    return render(request, 'library/home.html', {'materials': materials})
+    latest_materials = Material.objects.all().order_by('-upload_date')[:5]
+    top_materials = Material.objects.annotate(avg_rating=Avg('reviews__rating')).order_by('-avg_rating')[:5]
 
+    return render(request, 'library/home.html', {
+        'latest_materials': latest_materials,
+        'top_materials': top_materials
+    })
 
 def material_list(request):
     category = request.GET.get('category', None)
@@ -28,7 +34,13 @@ def material_list(request):
 def material_detail(request, material_id):
     material = get_object_or_404(Material, id=material_id)
     reviews = material.reviews.all()
-    return render(request, 'library/material_detail.html', {'material': material, 'reviews': reviews})
+    form = ReviewForm()
+
+    return render(request, 'library/material_detail.html', {
+        'material': material,
+        'reviews': reviews,
+        'form': form
+    })
 
 @login_required(login_url='login')
 def upload_material(request):
@@ -132,9 +144,7 @@ def add_review(request, material_id):
             review.material = material
             review.save()
             return redirect('material_detail', material_id=material.id)
-    else:
-        form = ReviewForm()
-    return render(request, 'library/add_review.html', {'form': form, 'material': material})
+    return redirect('material_detail', material_id=material.id)
 
 @login_required(login_url='login')
 def user_dashboard(request):

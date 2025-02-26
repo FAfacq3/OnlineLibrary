@@ -1,12 +1,41 @@
-<h2>{{ material.title }}</h2>
-<p>{{ material.description }}</p>
-<a href="{% url 'download_material' material.id %}">Download</a>
-<h3>Reviews</h3>
-{% for review in reviews %}
-    <p>{{ review.user.username }}: {{ review.rating }} stars - {{ review.comment }}</p>
-{% endfor %}
-<form method="POST" action="{% url 'add_review' material.id %}">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Submit Review</button>
-</form>
+{% extends 'library/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ material.title }}</h2>
+    <p><strong>Category:</strong> {{ material.category }}</p>
+    <p><strong>Description:</strong> {{ material.description }}</p>
+    <p><strong>Uploaded by:</strong> {{ material.uploaded_by.username }}</p>
+    <p><strong>Upload Date:</strong> {{ material.upload_date }}</p>
+
+    {% if user.is_authenticated %}
+        <a href="{% url 'download_material' material.id %}" class="btn btn-primary">Download</a>
+    {% else %}
+        <p><a href="{% url 'login' %}">Log in</a> to download this material.</p>
+    {% endif %}
+
+    <hr>
+
+    <h3>Reviews</h3>
+    {% for review in reviews %}
+        <div class="border p-3 mb-2">
+            <p><strong>{{ review.user.username }}</strong> rated: {{ review.rating }}/5</p>
+            <p>{{ review.comment }}</p>
+            <p class="text-muted">{{ review.created_at }}</p>
+        </div>
+    {% empty %}
+        <p>No reviews yet. Be the first to review!</p>
+    {% endfor %}
+
+    {% if user.is_authenticated %}
+        <h4>Add a Review</h4>
+        <form method="POST" action="{% url 'add_review' material.id %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-success">Submit Review</button>
+        </form>
+    {% else %}
+        <p><a href="{% url 'login' %}">Log in</a> to add a review.</p>
+    {% endif %}
+</div>
+{% endblock %}
