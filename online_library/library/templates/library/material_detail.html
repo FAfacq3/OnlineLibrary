@@ -8,12 +8,52 @@
     <p><strong>Uploaded by:</strong> {{ material.uploaded_by.username }}</p>
     <p><strong>Upload Date:</strong> {{ material.upload_date }}</p>
 
+    <hr>
+
+    <h3>File Preview</h3>
+    {% with file_ext=material.file.url|lower|slice:'-5:' %}
+        {% if file_ext|slice:'-4:' == ".pdf" %}
+            <div class="text-center">
+                <canvas id="pdf-canvas" style="border: 1px solid #ccc; width: 100%; max-height: 600px;"></canvas>
+                <div class="mt-2">
+                    <button onclick="prevPage()" class="btn btn-secondary">Previous</button>
+                    <span>Page <span id="page-num">1</span> of <span id="page-count">?</span></span>
+                    <button onclick="nextPage()" class="btn btn-secondary">Next</button>
+                </div>
+            </div>
+        {% elif file_ext|slice:'-4:' == ".mp4" %}
+            <video width="100%" controls>
+                <source src="{{ material.file.url }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        {% elif file_ext|slice:'-4:' == ".jpg" or file_ext|slice:'-4:' == ".png" or file_ext|slice:'-5:' == ".jfif" %}
+            <img src="{{ material.file.url }}" alt="Uploaded Image" width="100%" />
+        {% elif material.file.url|lower|slice:'-4:' == ".txt" %}
+            <iframe src="{% url 'txt_preview' material.id %}" width="100%" height="400px"></iframe>
+        {% elif file_ext|slice:'-5:' == ".docx" %}
+            <iframe src="https://view.officeapps.live.com/op/embed.aspx?src={{ request.build_absolute_uri|urlencode }}" width="100%" height="500px"></iframe>
+        {% elif file_ext|slice:'-5:' == ".pptx" %}
+            <iframe src="https://view.officeapps.live.com/op/embed.aspx?src={{ request.build_absolute_uri|urlencode }}" width="100%" height="500px"></iframe>
+        {% else %}
+            <p><a href="{{ material.file.url }}" class="btn btn-primary">Download File</a></p>
+        {% endif %}
+    {% endwith %}
+
+    <hr>
     {% if user.is_authenticated %}
         <a href="{% url 'download_material' material.id %}" class="btn btn-primary">Download</a>
     {% else %}
         <p><a href="{% url 'login' %}">Log in</a> to download this material.</p>
     {% endif %}
 
+    {% if user == material.uploaded_by or user.is_superuser %}
+        <form method="POST" action="{% url 'delete_material' material.id %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this material?');">
+                Delete Material
+            </button>
+        </form>
+    {% endif %}
     <hr>
 
     <h3>Reviews</h3>
@@ -38,4 +78,85 @@
         <p><a href="{% url 'login' %}">Log in</a> to add a review.</p>
     {% endif %}
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.worker.min.js";
+
+    var pdfUrl = "{{ request.scheme }}://{{ request.get_host }}{{ material.file.url }}";
+    console.log("Full PDF File URL:", pdfUrl);
+
+    var pdfDoc = null,
+        pageNum = 1,
+        pageRendering = false,
+        pageNumPending = null,
+        scale = 1.5,
+        canvas = document.getElementById('pdf-canvas'),
+        ctx = canvas.getContext('2d');
+
+    function renderPage(num) {
+        pageRendering = true;
+        pdfDoc.getPage(num).then(function(page) {
+            var viewport = page.getViewport({ scale: scale });
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            var renderContext = {
+                canvasContext: ctx,
+                viewport: viewport
+            };
+            var renderTask = page.render(renderContext);
+
+            renderTask.promise.then(function () {
+                pageRendering = false;
+                document.getElementById('page-num').textContent = num;
+                if (pageNumPending !== null) {
+                    renderPage(pageNumPending);
+                    pageNumPending = null;
+                }
+            });
+        }).catch(function(error) {
+            console.error("Error rendering page:", error);
+        });
+    }
+
+    function queueRenderPage(num) {
+        if (pageRendering) {
+            pageNumPending = num;
+        } else {
+            renderPage(num);
+        }
+    }
+
+    function prevPage() {
+        if (pageNum <= 1) {
+            return;
+        }
+        pageNum--;
+        queueRenderPage(pageNum);
+    }
+
+    function nextPage() {
+        if (pageNum >= pdfDoc.numPages) {
+            return;
+        }
+        pageNum++;
+        queueRenderPage(pageNum);
+    }
+
+    pdfjsLib.getDocument(pdfUrl).promise.then(function (pdfDoc_) {
+        pdfDoc = pdfDoc_;
+        document.getElementById('page-count').textContent = pdfDoc.numPages;
+        renderPage(pageNum);
+    }).catch(function(error) {
+        console.error("Error loading PDF:", error);
+    });
+</script>
+
+
+<script>
+    var pdfUrl = "{{ request.scheme }}://{{ request.get_host }}{{ material.file.url }}";
+    console.log("Full PDF File URL:", pdfUrl);
+</script>
+
 {% endblock %}

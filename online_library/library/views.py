@@ -36,6 +36,8 @@ def material_detail(request, material_id):
     reviews = material.reviews.all()
     form = ReviewForm()
 
+    print("Material File URL:", material.file.url if material.file else "No file uploaded")
+
     return render(request, 'library/material_detail.html', {
         'material': material,
         'reviews': reviews,
@@ -66,6 +68,22 @@ def download_material(request, material_id):
     DownloadLog.objects.create(user=request.user, material=material)
 
     return FileResponse(open(file_path, 'rb'), as_attachment=True)
+
+@login_required(login_url='login')
+def delete_material(request, material_id):
+    material = get_object_or_404(Material, id=material_id)
+
+    if request.user == material.uploaded_by or request.user.is_superuser:
+        file_path = material.file.path
+        material.delete()
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+        messages.success(request, "Material deleted successfully.")
+    else:
+        messages.error(request, "You do not have permission to delete this material.")
+
+    return redirect('material_list')
 
 @login_required
 def add_review(request, material_id):
@@ -150,3 +168,19 @@ def add_review(request, material_id):
 def user_dashboard(request):
     user_materials = Material.objects.filter(uploaded_by=request.user)
     return render(request, 'library/dashboard.html', {'user_materials': user_materials})
+
+def txt_preview(request, material_id):
+    material = get_object_or_404(Material, id=material_id)
+
+    if not material.file.url.endswith('.txt'):
+        return HttpResponse("Invalid file type", status=400)
+
+    file_path = material.file.path
+
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+    except Exception as e:
+        return HttpResponse(f"Error reading file: {e}", status=500)
+
+    return HttpResponse(f"<pre style='white-space: pre-wrap;'>{content}</pre>", content_type="text/html")

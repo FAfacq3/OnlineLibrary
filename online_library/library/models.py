@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 CATEGORY_CHOICES = [
-    ('Text', 'Text'),
+    ('Book', 'Book'),
     ('Video', 'Video'),
     ('Audio', 'Audio'),
     ('Software', 'Software'),
