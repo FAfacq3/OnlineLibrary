@@ -1,37 +1,91 @@
 {% extends 'library/base.html' %}
 
 {% block content %}
-<h2>Upload Material</h2>
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Upload Material</h2>
 
-{% if messages %}
-    {% for message in messages %}
-        <p style="color: green;">{{ message }}</p>
-    {% endfor %}
-{% endif %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
 
-<form method="POST" enctype="multipart/form-data" class="upload-form">
-    {% csrf_token %}
-    
-    <label for="id_title">Title:</label>
-    {{ form.title }}
+    <form method="POST" enctype="multipart/form-data" class="card p-4 shadow-sm">
+        {% csrf_token %}
 
-    <label for="id_description">Description:</label>
-    {{ form.description }}
+        <div class="mb-3">
+            <label for="id_title" class="form-label">Title:</label>
+            {{ form.title }}
+        </div>
 
-    <label for="id_category">Category:</label>
-    {{ form.category }}
+        <div class="mb-3">
+            <label for="id_description" class="form-label">Description:</label>
+            <textarea class="form-control" id="id_description" name="description" rows="4"></textarea>
+        </div>
 
-    <label for="id_file">Upload File:</label>
-    {{ form.file }}
-    <p id="file-name"></p>
+        <div class="mb-3">
+            <label for="id_category" class="form-label">Category:</label>
+            {{ form.category }}
+        </div>
 
-    <button type="submit">Upload</button>
-</form>
+        <div class="mb-3">
+            <label for="id_file" class="form-label">Upload File:</label>
+            {{ form.file }}
+            <p id="file-name" class="mt-2 text-primary"></p>
+            <p id="file-size" class="text-danger"></p>
+        </div>
+
+        <div class="progress mb-3 d-none" id="upload-progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                 style="width: 0%" id="progress-bar"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Upload</button>
+    </form>
+</div>
 
 <script>
     document.getElementById("id_file").addEventListener("change", function() {
-        var fileName = this.files[0] ? this.files[0].name : "No file selected";
-        document.getElementById("file-name").innerText = "Selected file: " + fileName;
+        var file = this.files[0];
+        if (file) {
+            var fileName = file.name;
+            var fileSize = (file.size / 1024 / 1024).toFixed(2) + " MB";
+            document.getElementById("file-name").innerText = "Selected file: " + fileName;
+            document.getElementById("file-size").innerText = "File size: " + fileSize;
+
+            var allowedExtensions = [".pdf", ".mp4", ".txt", ".jpg", ".png", ".docx"];
+            var fileExtension = fileName.slice(fileName.lastIndexOf(".")).toLowerCase();
+
+            if (!allowedExtensions.includes(fileExtension)) {
+                alert("Invalid file type! Allowed types: PDF, MP4, TXT, JPG, PNG, DOCX");
+                this.value = "";
+                document.getElementById("file-name").innerText = "";
+                document.getElementById("file-size").innerText = "";
+            }
+        }
+    });
+
+    document.querySelector("form").addEventListener("submit", function(event) {
+        var file = document.getElementById("id_file").files[0];
+        if (!file) {
+            alert("Please select a file before uploading!");
+            event.preventDefault();
+            return;
+        }
+
+        document.getElementById("upload-progress").classList.remove("d-none");
+
+        var progress = document.getElementById("progress-bar");
+        var width = 0;
+        var interval = setInterval(function() {
+            if (width >= 100) {
+                clearInterval(interval);
+            } else {
+                width += 10;
+                progress.style.width = width + "%";
+                progress.innerText = width + "%";
+            }
+        }, 300);
     });
 </script>
 

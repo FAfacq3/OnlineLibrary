@@ -2,81 +2,99 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>{{ material.title }}</h2>
-    <p><strong>Category:</strong> {{ material.category }}</p>
-    <p><strong>Description:</strong> {{ material.description }}</p>
-    <p><strong>Uploaded by:</strong> {{ material.uploaded_by.username }}</p>
-    <p><strong>Upload Date:</strong> {{ material.upload_date }}</p>
+    <div class="card shadow-lg p-4">
+        <h2 class="text-center mb-3">{{ material.title }}</h2>
 
-    <hr>
-
-    <h3>File Preview</h3>
-    {% with file_ext=material.file.url|lower|slice:'-5:' %}
-        {% if file_ext|slice:'-4:' == ".pdf" %}
-            <div class="text-center">
-                <canvas id="pdf-canvas" style="border: 1px solid #ccc; width: 100%; max-height: 600px;"></canvas>
-                <div class="mt-2">
-                    <button onclick="prevPage()" class="btn btn-secondary">Previous</button>
-                    <span>Page <span id="page-num">1</span> of <span id="page-count">?</span></span>
-                    <button onclick="nextPage()" class="btn btn-secondary">Next</button>
-                </div>
+        <div class="row">
+            <div class="col-md-8">
+                <p><strong>Category:</strong> {{ material.category }}</p>
+                <p><strong>Description:</strong> {{ material.description }}</p>
+                <p><strong>Uploaded by:</strong> {{ material.uploaded_by.username }}</p>
+                <p><strong>Upload Date:</strong> {{ material.upload_date }}</p>
             </div>
-        {% elif file_ext|slice:'-4:' == ".mp4" %}
-            <video width="100%" controls>
-                <source src="{{ material.file.url }}" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-        {% elif file_ext|slice:'-4:' == ".jpg" or file_ext|slice:'-4:' == ".png" or file_ext|slice:'-5:' == ".jfif" %}
-            <img src="{{ material.file.url }}" alt="Uploaded Image" width="100%" />
-        {% elif material.file.url|lower|slice:'-4:' == ".txt" %}
-            <iframe src="{% url 'txt_preview' material.id %}" width="100%" height="400px"></iframe>
-        {% elif file_ext|slice:'-5:' == ".docx" %}
-            <iframe src="https://view.officeapps.live.com/op/embed.aspx?src={{ request.build_absolute_uri|urlencode }}" width="100%" height="500px"></iframe>
-        {% elif file_ext|slice:'-5:' == ".pptx" %}
-            <iframe src="https://view.officeapps.live.com/op/embed.aspx?src={{ request.build_absolute_uri|urlencode }}" width="100%" height="500px"></iframe>
-        {% else %}
-            <p><a href="{{ material.file.url }}" class="btn btn-primary">Download File</a></p>
-        {% endif %}
-    {% endwith %}
-
-    <hr>
-    {% if user.is_authenticated %}
-        <a href="{% url 'download_material' material.id %}" class="btn btn-primary">Download</a>
-    {% else %}
-        <p><a href="{% url 'login' %}">Log in</a> to download this material.</p>
-    {% endif %}
-
-    {% if user == material.uploaded_by or user.is_superuser %}
-        <form method="POST" action="{% url 'delete_material' material.id %}" style="display: inline;">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this material?');">
-                Delete Material
-            </button>
-        </form>
-    {% endif %}
-    <hr>
-
-    <h3>Reviews</h3>
-    {% for review in reviews %}
-        <div class="border p-3 mb-2">
-            <p><strong>{{ review.user.username }}</strong> rated: {{ review.rating }}/5</p>
-            <p>{{ review.comment }}</p>
-            <p class="text-muted">{{ review.created_at }}</p>
+            <div class="col-md-4 text-end">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'download_material' material.id %}" class="btn btn-primary">Download</a>
+                {% else %}
+                    <p><a href="{% url 'login' %}">Log in</a> to download this material.</p>
+                {% endif %}
+                {% if user == material.uploaded_by or user.is_superuser %}
+                    <form method="POST" action="{% url 'delete_material' material.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger"
+                                onclick="return confirm('Are you sure you want to delete this material?');">
+                            Delete
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
         </div>
-    {% empty %}
-        <p>No reviews yet. Be the first to review!</p>
-    {% endfor %}
 
-    {% if user.is_authenticated %}
-        <h4>Add a Review</h4>
-        <form method="POST" action="{% url 'add_review' material.id %}">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-success">Submit Review</button>
-        </form>
-    {% else %}
-        <p><a href="{% url 'login' %}">Log in</a> to add a review.</p>
-    {% endif %}
+        <hr>
+
+        <h3 class="mt-4">File Preview</h3>
+        <div class="border p-3 rounded bg-light">
+            {% with file_ext=material.file.url|lower|slice:'-5:' %}
+                {% if file_ext|slice:'-4:' == ".pdf" %}
+                    <div class="text-center">
+                        <canvas id="pdf-canvas" style="border: 1px solid #ccc; width: 100%; max-width: 800px; height: auto;"></canvas>
+                        <div class="mt-2">
+                            <button onclick="prevPage()" class="btn btn-outline-secondary">⬅️ Previous</button>
+                            <span>Page <span id="page-num">1</span> of <span id="page-count">?</span></span>
+                            <button onclick="nextPage()" class="btn btn-outline-secondary">Next ➡️</button>
+                        </div>
+                    </div>
+                {% elif file_ext|slice:'-4:' == ".mp4" %}
+                    <video width="100%" controls class="rounded shadow">
+                        <source src="{{ material.file.url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                {% elif file_ext|slice:'-4:' == ".jpg" or file_ext|slice:'-4:' == ".png" or file_ext|slice:'-5:' == ".jfif" %}
+                    <img src="{{ material.file.url }}" class="img-fluid rounded shadow" alt="Uploaded Image" />
+                {% elif material.file.url|lower|slice:'-4:' == ".txt" %}
+                    <iframe src="{% url 'txt_preview' material.id %}" width="100%" height="400px" class="border"></iframe>
+                {% elif file_ext|slice:'-5:' == ".docx" or file_ext|slice:'-5:' == ".pptx" %}
+                    <iframe src="https://view.officeapps.live.com/op/embed.aspx?src={{ request.build_absolute_uri|urlencode }}"
+                            width="100%" height="500px" class="border"></iframe>
+                {% else %}
+                    <p><a href="{{ material.file.url }}" class="btn btn-warning">Download File</a></p>
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <hr>
+
+        <h3 class="mt-4">Reviews</h3>
+        <div class="border p-3 rounded">
+            {% for review in reviews %}
+                <div class="border-bottom pb-2 mb-2">
+                    <p><strong>{{ review.user.username }}</strong> rated: {{ review.rating }}/5</p>
+                    <p>{{ review.comment }}</p>
+                    <p class="text-muted small">{{ review.created_at }}</p>
+                </div>
+            {% empty %}
+                <p>No reviews yet. Be the first to review!</p>
+            {% endfor %}
+        </div>
+
+        {% if user.is_authenticated %}
+            <h4 class="mt-4">Add a Review</h4>
+            <form method="POST" action="{% url 'add_review' material.id %}" class="border p-3 rounded">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="id_rating" class="form-label">Rating:</label>
+                    {{ form.rating }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_comment" class="form-label">Comment:</label>
+                    <textarea class="form-control" id="id_comment" name="comment" rows="4" placeholder="Write your review here..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-success w-100">Submit Review</button>
+            </form>
+        {% else %}
+            <p><a href="{% url 'login' %}">Log in</a> to add a review.</p>
+        {% endif %}
+    </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
@@ -129,19 +147,17 @@
     }
 
     function prevPage() {
-        if (pageNum <= 1) {
-            return;
+        if (pageNum > 1) {
+            pageNum--;
+            queueRenderPage(pageNum);
         }
-        pageNum--;
-        queueRenderPage(pageNum);
     }
 
     function nextPage() {
-        if (pageNum >= pdfDoc.numPages) {
-            return;
+        if (pageNum < pdfDoc.numPages) {
+            pageNum++;
+            queueRenderPage(pageNum);
         }
-        pageNum++;
-        queueRenderPage(pageNum);
     }
 
     pdfjsLib.getDocument(pdfUrl).promise.then(function (pdfDoc_) {
@@ -151,12 +167,6 @@
     }).catch(function(error) {
         console.error("Error loading PDF:", error);
     });
-</script>
-
-
-<script>
-    var pdfUrl = "{{ request.scheme }}://{{ request.get_host }}{{ material.file.url }}";
-    console.log("Full PDF File URL:", pdfUrl);
 </script>
 
 {% endblock %}
