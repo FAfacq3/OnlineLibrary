@@ -4,7 +4,7 @@
 ### User system set
 ### mian page set
 #### -search, -upload, -downland
-#### -review, -laster/top Materials
+#### -review, -lastest/top Materials
 ### File Preview, file delete
 #### -fix upload, -fix review button show 
 #### -add pdf preview, -add page for pdf file
@@ -17,3 +17,4 @@
 ### optimization UI and page
 #### -fix image preview
 ### optimization pdf preview(do not use button to change the page)
+#### -fix review

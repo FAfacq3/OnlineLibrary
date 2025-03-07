@@ -45,12 +45,10 @@
                         Your browser does not support the video tag.
                     </video>
                 {% elif ".jpg" in file_ext or ".png" in file_ext or ".jfif" in file_ext or ".jpeg" in file_ext or ".gif" in file_ext %}
-                    <h3 class="mt-4">🖼 Image Preview</h3>
                     <img id="preview-image" src="{{ material.file.url }}" class="img-fluid rounded shadow" alt="Uploaded Image" />
                 {% elif ".txt" in file_ext %}
                     <iframe src="{% url 'txt_preview' material.id %}" width="100%" height="400px" class="border"></iframe>
                 {% elif ".mp3" in file_ext or ".wav" in file_ext or ".ogg" in file_ext %}
-                    <h3 class="mt-4">🎵 Audio Preview</h3>
                     <audio controls class="w-100">
                         <source src="{{ material.file.url }}" type="audio/{{ file_ext|slice:'-3:' }}">
                         Your browser does not support the audio element.
@@ -60,9 +58,42 @@
                 {% endif %}
             {% endwith %}
         </div>
+
+        <hr>
+
+        <h3 class="mt-4">Reviews</h3>
+        <div class="border p-3 rounded">
+            {% for review in reviews %}
+                <div class="border-bottom pb-2 mb-2">
+                    <p><strong>{{ review.user.username }}</strong> rated: {{ review.rating }}/5</p>
+                    <p>{{ review.comment }}</p>
+                    <p class="text-muted small">{{ review.created_at }}</p>
+                </div>
+            {% empty %}
+                <p>No reviews yet. Be the first to review!</p>
+            {% endfor %}
+        </div>
+
+        {% if user.is_authenticated %}
+            <h4 class="mt-4">Add a Review</h4>
+            <form method="POST" action="{% url 'add_review' material.id %}" class="border p-3 rounded">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="id_rating" class="form-label">Rating:</label>
+                    {{ form.rating }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_comment" class="form-label">Comment:</label>
+                    <textarea class="form-control" id="id_comment" name="comment" rows="4" placeholder="Write your review here..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-success w-100">Submit Review</button>
+            </form>
+        {% else %}
+            <p><a href="{% url 'login' %}">Log in</a> to add a review.</p>
+        {% endif %}
+
     </div>
 </div>
 
-<p>File URL: {{ material.file.url }}</p>
 
 {% endblock %}
