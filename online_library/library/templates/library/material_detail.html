@@ -36,29 +36,33 @@
 
         <h3 class="mt-4">File Preview</h3>
         <div class="border p-3 rounded bg-light">
-            {% with file_ext=material.file.url|lower|slice:'-4:' %}
-                {% if file_ext == ".pdf" %}
+            {% with file_ext=material.file.url|lower %}
+                {% if ".pdf" in file_ext %}
                     <iframe src="{{ material.file.url }}" width="100%" height="500px" class="border"></iframe>
-                {% elif file_ext == ".mp4" %}
+                {% elif ".mp4" in file_ext %}
                     <video width="100%" controls class="rounded shadow">
                         <source src="{{ material.file.url }}" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
-                {% elif file_ext == ".jpg" or file_ext == ".png" or file_ext == ".jfif" %}
-                    <img src="{{ material.file.url }}" class="img-fluid rounded shadow" alt="Uploaded Image" />
-                {% elif file_ext == ".txt" %}
+                {% elif ".jpg" in file_ext or ".png" in file_ext or ".jfif" in file_ext or ".jpeg" in file_ext or ".gif" in file_ext %}
+                    <h3 class="mt-4">🖼 Image Preview</h3>
+                    <img id="preview-image" src="{{ material.file.url }}" class="img-fluid rounded shadow" alt="Uploaded Image" />
+                {% elif ".txt" in file_ext %}
                     <iframe src="{% url 'txt_preview' material.id %}" width="100%" height="400px" class="border"></iframe>
-                {% elif file_ext == ".mp3" or file_ext == ".wav" or file_ext == ".ogg" %}
-                    <h3 class="mt-4">Audio Preview</h3>
+                {% elif ".mp3" in file_ext or ".wav" in file_ext or ".ogg" in file_ext %}
+                    <h3 class="mt-4">🎵 Audio Preview</h3>
                     <audio controls class="w-100">
-                        <source src="{{ material.file.url }}" type="audio/{{ file_ext|slice:'1:' }}">
+                        <source src="{{ material.file.url }}" type="audio/{{ file_ext|slice:'-3:' }}">
                         Your browser does not support the audio element.
                     </audio>
                 {% else %}
-                    <p><a href="{{ material.file.url }}" class="btn btn-warning">Download File</a></p>
+                    <p style="color: red;">No valid file format detected.</p>
                 {% endif %}
             {% endwith %}
         </div>
     </div>
 </div>
+
+<p>File URL: {{ material.file.url }}</p>
+
 {% endblock %}

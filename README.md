@@ -15,3 +15,5 @@
 ### add audio preview
 #### -optimization upload information
 ### optimization UI and page
+#### -fix image preview
+### optimization pdf preview(do not use button to change the page)
