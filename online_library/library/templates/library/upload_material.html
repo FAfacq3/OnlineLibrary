@@ -20,7 +20,7 @@
 
         <div class="mb-3">
             <label for="id_description" class="form-label">Description:</label>
-            <textarea class="form-control" id="id_description" name="description" rows="4"></textarea>
+            {{ form.description }}
         </div>
 
         <div class="mb-3">
@@ -29,15 +29,18 @@
         </div>
 
         <div class="mb-3">
-            <label for="id_file" class="form-label">Upload File:</label>
-            {{ form.file }}
-            <p id="file-name" class="mt-2 text-primary"></p>
-            <p id="file-size" class="text-danger"></p>
+            <label for="id_author" class="form-label">Author:</label>
+            {{ form.author }}
         </div>
 
-        <div class="progress mb-3 d-none" id="upload-progress">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                 style="width: 0%" id="progress-bar"></div>
+        <div class="mb-3">
+            <label for="id_release_date" class="form-label">Release Date:</label>
+            {{ form.release_date }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_file" class="form-label">Upload File:</label>
+            {{ form.file }}
         </div>
 
         <button type="submit" class="btn btn-primary w-100">Upload</button>

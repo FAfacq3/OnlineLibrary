@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -16,6 +18,8 @@ class Material(models.Model):
     file = models.FileField(upload_to='materials/')
     upload_date = models.DateTimeField(auto_now_add=True)
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.CharField(max_length=255, default="Unknown")
+    release_date = models.DateField(default=date.today)
 
     def __str__(self):
         return f"{self.title} ({self.category})"

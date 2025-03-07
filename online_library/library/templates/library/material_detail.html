@@ -9,6 +9,8 @@
             <div class="col-md-8">
                 <p><strong>Category:</strong> {{ material.category }}</p>
                 <p><strong>Description:</strong> {{ material.description }}</p>
+                <p><strong>Author:</strong> {{ material.author }}</p>
+                <p><strong>Release Date:</strong> {{ material.release_date }}</p>
                 <p><strong>Uploaded by:</strong> {{ material.uploaded_by.username }}</p>
                 <p><strong>Upload Date:</strong> {{ material.upload_date }}</p>
             </div>
@@ -34,139 +36,29 @@
 
         <h3 class="mt-4">File Preview</h3>
         <div class="border p-3 rounded bg-light">
-            {% with file_ext=material.file.url|lower|slice:'-5:' %}
-                {% if file_ext|slice:'-4:' == ".pdf" %}
-                    <div class="text-center">
-                        <canvas id="pdf-canvas" style="border: 1px solid #ccc; width: 100%; max-width: 800px; height: auto;"></canvas>
-                        <div class="mt-2">
-                            <button onclick="prevPage()" class="btn btn-outline-secondary">⬅️ Previous</button>
-                            <span>Page <span id="page-num">1</span> of <span id="page-count">?</span></span>
-                            <button onclick="nextPage()" class="btn btn-outline-secondary">Next ➡️</button>
-                        </div>
-                    </div>
-                {% elif file_ext|slice:'-4:' == ".mp4" %}
+            {% with file_ext=material.file.url|lower|slice:'-4:' %}
+                {% if file_ext == ".pdf" %}
+                    <iframe src="{{ material.file.url }}" width="100%" height="500px" class="border"></iframe>
+                {% elif file_ext == ".mp4" %}
                     <video width="100%" controls class="rounded shadow">
                         <source src="{{ material.file.url }}" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
-                {% elif file_ext|slice:'-4:' == ".jpg" or file_ext|slice:'-4:' == ".png" or file_ext|slice:'-5:' == ".jfif" %}
+                {% elif file_ext == ".jpg" or file_ext == ".png" or file_ext == ".jfif" %}
                     <img src="{{ material.file.url }}" class="img-fluid rounded shadow" alt="Uploaded Image" />
-                {% elif material.file.url|lower|slice:'-4:' == ".txt" %}
+                {% elif file_ext == ".txt" %}
                     <iframe src="{% url 'txt_preview' material.id %}" width="100%" height="400px" class="border"></iframe>
-                {% elif file_ext|slice:'-5:' == ".docx" or file_ext|slice:'-5:' == ".pptx" %}
-                    <iframe src="https://view.officeapps.live.com/op/embed.aspx?src={{ request.build_absolute_uri|urlencode }}"
-                            width="100%" height="500px" class="border"></iframe>
+                {% elif file_ext == ".mp3" or file_ext == ".wav" or file_ext == ".ogg" %}
+                    <h3 class="mt-4">Audio Preview</h3>
+                    <audio controls class="w-100">
+                        <source src="{{ material.file.url }}" type="audio/{{ file_ext|slice:'1:' }}">
+                        Your browser does not support the audio element.
+                    </audio>
                 {% else %}
                     <p><a href="{{ material.file.url }}" class="btn btn-warning">Download File</a></p>
                 {% endif %}
             {% endwith %}
         </div>
-
-        <hr>
-
-        <h3 class="mt-4">Reviews</h3>
-        <div class="border p-3 rounded">
-            {% for review in reviews %}
-                <div class="border-bottom pb-2 mb-2">
-                    <p><strong>{{ review.user.username }}</strong> rated: {{ review.rating }}/5</p>
-                    <p>{{ review.comment }}</p>
-                    <p class="text-muted small">{{ review.created_at }}</p>
-                </div>
-            {% empty %}
-                <p>No reviews yet. Be the first to review!</p>
-            {% endfor %}
-        </div>
-
-        {% if user.is_authenticated %}
-            <h4 class="mt-4">Add a Review</h4>
-            <form method="POST" action="{% url 'add_review' material.id %}" class="border p-3 rounded">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label for="id_rating" class="form-label">Rating:</label>
-                    {{ form.rating }}
-                </div>
-                <div class="mb-3">
-                    <label for="id_comment" class="form-label">Comment:</label>
-                    <textarea class="form-control" id="id_comment" name="comment" rows="4" placeholder="Write your review here..."></textarea>
-                </div>
-                <button type="submit" class="btn btn-success w-100">Submit Review</button>
-            </form>
-        {% else %}
-            <p><a href="{% url 'login' %}">Log in</a> to add a review.</p>
-        {% endif %}
     </div>
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
-<script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.worker.min.js";
-
-    var pdfUrl = "{{ request.scheme }}://{{ request.get_host }}{{ material.file.url }}";
-    console.log("Full PDF File URL:", pdfUrl);
-
-    var pdfDoc = null,
-        pageNum = 1,
-        pageRendering = false,
-        pageNumPending = null,
-        scale = 1.5,
-        canvas = document.getElementById('pdf-canvas'),
-        ctx = canvas.getContext('2d');
-
-    function renderPage(num) {
-        pageRendering = true;
-        pdfDoc.getPage(num).then(function(page) {
-            var viewport = page.getViewport({ scale: scale });
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-
-            var renderContext = {
-                canvasContext: ctx,
-                viewport: viewport
-            };
-            var renderTask = page.render(renderContext);
-
-            renderTask.promise.then(function () {
-                pageRendering = false;
-                document.getElementById('page-num').textContent = num;
-                if (pageNumPending !== null) {
-                    renderPage(pageNumPending);
-                    pageNumPending = null;
-                }
-            });
-        }).catch(function(error) {
-            console.error("Error rendering page:", error);
-        });
-    }
-
-    function queueRenderPage(num) {
-        if (pageRendering) {
-            pageNumPending = num;
-        } else {
-            renderPage(num);
-        }
-    }
-
-    function prevPage() {
-        if (pageNum > 1) {
-            pageNum--;
-            queueRenderPage(pageNum);
-        }
-    }
-
-    function nextPage() {
-        if (pageNum < pdfDoc.numPages) {
-            pageNum++;
-            queueRenderPage(pageNum);
-        }
-    }
-
-    pdfjsLib.getDocument(pdfUrl).promise.then(function (pdfDoc_) {
-        pdfDoc = pdfDoc_;
-        document.getElementById('page-count').textContent = pdfDoc.numPages;
-        renderPage(pageNum);
-    }).catch(function(error) {
-        console.error("Error loading PDF:", error);
-    });
-</script>
-
 {% endblock %}
