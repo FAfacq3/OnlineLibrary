@@ -35,3 +35,7 @@
 #### -fix image preview
 ### optimization pdf preview(do not use button to change the page)
 #### -fix review
+### fix directory
+#### force to push media (just for now, i will change it late with using pythonanywhere)
+# Finished everything?
+#### maybe. I will check.
