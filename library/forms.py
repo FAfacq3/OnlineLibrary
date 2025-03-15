@@ -6,7 +6,12 @@ from django.contrib.auth.models import User
 class MaterialForm(forms.ModelForm):
     class Meta:
         model = Material
-        fields = ['title', 'description', 'category', 'file']
+        fields = ['title', 'description', 'category', 'file', 'author', 'release_date']
+        widgets = {
+            'release_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'author': forms.TextInput(attrs={'class': 'form-control'}),
+        }
 
 class ReviewForm(forms.ModelForm):
     class Meta:

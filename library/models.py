@@ -1,8 +1,10 @@
+from datetime import date
+
 from django.db import models
 from django.contrib.auth.models import User
 
 CATEGORY_CHOICES = [
-    ('Text', 'Text'),
+    ('Book', 'Book'),
     ('Video', 'Video'),
     ('Audio', 'Audio'),
     ('Software', 'Software'),
@@ -16,19 +18,21 @@ class Material(models.Model):
     file = models.FileField(upload_to='materials/')
     upload_date = models.DateTimeField(auto_now_add=True)
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.CharField(max_length=255, default="Unknown")
+    release_date = models.DateField(default=date.today)
 
     def __str__(self):
         return f"{self.title} ({self.category})"
 
 class Review(models.Model):
-    material = models.ForeignKey(Material, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    material = models.ForeignKey('Material', related_name='reviews', on_delete=models.CASCADE)
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
     comment = models.TextField()
-    review_date = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.material.title} ({self.rating} stars)"
+        return f"{self.user.username} rated {self.material.title} {self.rating}/5"
 
 class DownloadLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

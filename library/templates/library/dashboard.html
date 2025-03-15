@@ -1,8 +1,6 @@
 {% extends 'library/base.html' %}
 
 {% block content %}
-<h2>My Dashboard</h2>
-
 <h3>My Uploaded Materials</h3>
 <ul>
     {% for material in user_materials %}
@@ -26,5 +24,4 @@
     {% endfor %}
 </ul>
 
-<a href="{% url 'upload_material' %}">Upload New Material</a>
 {% endblock %}

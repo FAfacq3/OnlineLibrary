@@ -1,48 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Online Library</title>
+    <title>{% block title %}Online Library{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body>
 
-{% if request.resolver_match.url_name not in 'login register' %}
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">Online Library</a>
+<body class="d-flex flex-column min-vh-100">
 
-            <form class="d-flex" method="GET" action="{% url 'material_list' %}">
-                <input class="form-control me-2" type="search" name="q" placeholder="Search materials..." value="{{ request.GET.q }}">
-                <button class="btn btn-outline-light" type="submit">Search</button>
-            </form>
-
-            <ul class="navbar-nav ms-auto">
-                {% if user.is_authenticated %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'upload_material' %}">Upload</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
-                {% else %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>
-                {% endif %}
-            </ul>
-        </div>
-    </nav>
-{% endif %}
-
-<div class="container mt-4">
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-info">{{ message }}</div>
-        {% endfor %}
+    {% if request.resolver_match.url_name not in 'login register' %}
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="{% url 'home' %}">📚 Online Library</a>
+                <form class="d-flex" method="GET" action="{% url 'material_list' %}">
+                    <input class="form-control me-2" type="search" name="q" placeholder="Search materials..." value="{{ request.GET.q }}">
+                    <button class="btn btn-outline-light" type="submit">Search</button>
+                </form>
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'upload_material' %}">Upload</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
     {% endif %}
 
-    {% block content %}{% endblock %}
-</div>
+    <main class="container flex-grow-1 mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-info">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        {% block content %}{% endblock %}
 
+        {% if request.resolver_match.url_name != 'home' %}
+            <div class="container text-center mt-4">
+                <button class="btn btn-outline-secondary me-2" onclick="history.back()">Back</button>
+                <a href="{% url 'home' %}" class="btn btn-primary">Home</a>
+            </div>
+        {% endif %}
+    </main>
+
+    <footer class="bg-light text-center py-3 mt-auto">
+        <p>Online Library</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
