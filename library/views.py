@@ -2,7 +2,7 @@ import os
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import FileResponse, HttpResponse
 from django.contrib.auth.decorators import login_required
-from .models import Material, DownloadLog
+from .models import Material, DownloadLog, UserProfile
 from .forms import MaterialForm, ReviewForm, SimpleUserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
@@ -86,6 +86,18 @@ def delete_material(request, material_id):
     return redirect('material_list')
 
 @login_required
+def favourite_material(request, material_id):
+    material = get_object_or_404(Material, id=material_id)
+    user_profile = get_object_or_404(UserProfile, user=request.user)
+
+    if material in user_profile.favourites.all():
+        user_profile.favourites.remove(material)
+    else:
+        user_profile.favourites.add(material)
+
+    return redirect('material_detail', material_id = material.id)
+
+@login_required
 def add_review(request, material_id):
     material = get_object_or_404(Material, id=material_id)
     if request.method == "POST":
@@ -104,13 +116,17 @@ def add_review(request, material_id):
 def user_dashboard(request):
     user_materials = Material.objects.filter(uploaded_by=request.user)
     user_downloads = DownloadLog.objects.filter(user=request.user).order_by('-download_date')
-    return render(request, 'library/dashboard.html', {'user_materials': user_materials, 'user_downloads': user_downloads})
+    user_profile = get_object_or_404(UserProfile, user=request.user)
+    user_favourites = user_profile.favourites.all()
+    print("HFJDSKLHFJSDKLHFJSDKLHFS", user_favourites)
+    return render(request, 'library/dashboard.html', {'user_materials': user_materials, 'user_downloads': user_downloads, 'user_favourites':user_favourites})
 
 def register(request):
     if request.method == "POST":
         form = SimpleUserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save()
+            UserProfile.objects.create(user=user)
             messages.success(request, "Account created successfully. Please log in.")
             return redirect('login')
     else:
@@ -167,7 +183,9 @@ def add_review(request, material_id):
 @login_required(login_url='login')
 def user_dashboard(request):
     user_materials = Material.objects.filter(uploaded_by=request.user)
-    return render(request, 'library/dashboard.html', {'user_materials': user_materials})
+    user_profile = get_object_or_404(UserProfile, user=request.user)
+    user_favourites = user_profile.favourites.all()
+    return render(request, 'library/dashboard.html', {'user_materials': user_materials, "user_favourites": user_favourites})
 
 def txt_preview(request, material_id):
     material = get_object_or_404(Material, id=material_id)

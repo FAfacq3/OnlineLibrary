@@ -8,6 +8,7 @@ urlpatterns = [
     path('materials/<int:material_id>/txt_preview/', views.txt_preview, name='txt_preview'),
     path('materials/upload/', views.upload_material, name='upload_material'),
     path('materials/<int:material_id>/download/', views.download_material, name='download_material'),
+    path('materials/<int:material_id>/favourite/', views.favourite_material, name='favourite_material'),
     path('materials/<int:material_id>/delete/', views.delete_material, name='delete_material'),
     path('materials/<int:material_id>/review/', views.add_review, name='add_review'),
     path('dashboard/', views.user_dashboard, name='dashboard'),
