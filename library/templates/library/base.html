@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load staticfiles %}
 
 <head>
     <meta charset="UTF-8">
@@ -23,6 +24,11 @@
                         <li class="nav-item"><a class="nav-link" href="{% url 'upload_material' %}">Upload</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+                        {% if user.profile.picture %}
+                            <img src="{{ user.profile.picture.url }}", alt="Profile Picture", style="width: 40px; height: 40px; border-radius: 50%;">
+                        {% else %}
+                            <img src="{% static 'images/default_profile_pic.jpg' %}" alt = "Default Avatar", style="width: 40px; height: 40px; border-radius: 50%;">
+                        {% endif %}
                     {% else %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>

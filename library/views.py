@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import FileResponse, HttpResponse
 from django.contrib.auth.decorators import login_required
 from .models import Material, DownloadLog, UserProfile
-from .forms import MaterialForm, ReviewForm, SimpleUserCreationForm
+from .forms import MaterialForm, ReviewForm, SimpleUserCreationForm, UserProfileForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
@@ -124,14 +124,24 @@ def user_dashboard(request):
 def register(request):
     if request.method == "POST":
         form = SimpleUserCreationForm(request.POST)
-        if form.is_valid():
+        profile_form = UserProfileForm(request.POST, request.FILES)
+        if form.is_valid() and profile_form.is_valid():
             user = form.save()
-            UserProfile.objects.create(user=user)
+            # user.set_password(user.password)
+            user.save()
+
+            profile = profile_form.save(commit = False)
+            profile.user = user
+            if 'picture' in request.FILES:
+                profile.picture = request.FILES['picture']
+            profile.save()
+
             messages.success(request, "Account created successfully. Please log in.")
             return redirect('login')
     else:
+        profile_form = UserProfileForm()
         form = SimpleUserCreationForm()
-    return render(request, 'library/register.html', {'form': form})
+    return render(request, 'library/register.html', {'form': form, 'profile_form': profile_form})
 
 def user_login(request):
     if request.method == "POST":
@@ -183,9 +193,10 @@ def add_review(request, material_id):
 @login_required(login_url='login')
 def user_dashboard(request):
     user_materials = Material.objects.filter(uploaded_by=request.user)
+    user_downloads = DownloadLog.objects.filter(user=request.user).order_by('-download_date')
     user_profile = get_object_or_404(UserProfile, user=request.user)
     user_favourites = user_profile.favourites.all()
-    return render(request, 'library/dashboard.html', {'user_materials': user_materials, "user_favourites": user_favourites})
+    return render(request, 'library/dashboard.html', {'user_materials': user_materials, "user_favourites": user_favourites, 'user_downloads':user_downloads})
 
 def txt_preview(request, material_id):
     material = get_object_or_404(Material, id=material_id)
