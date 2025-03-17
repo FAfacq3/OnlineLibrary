@@ -24,4 +24,15 @@
     {% endfor %}
 </ul>
 
+<h3>Favourites</h3>
+<ul>
+    {% for favourite in user_favourites %}
+     <li>
+        <a href = "{% url 'material_detail' favourite.id%}">{{favourite.title}}</a> ({{favourite.category}})
+     </li>
+     {% empty %}
+        <p>You haven't favourited any materials yet.</p>
+     {%endfor%}
+</ul>
+
 {% endblock %}
