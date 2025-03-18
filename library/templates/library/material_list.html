@@ -1,27 +1,32 @@
 {% extends 'library/base.html' %}
 
 {% block content %}
-<h2>Materials</h2>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>Available Materials</h2>
+        <h5 class="text-muted">{% if selected_category %}Category: {{ selected_category }}{% else %}All Categories{% endif %}</h5>
+    </div>
 
-<!-- 资料类别筛选 -->
-<h3>Filter by Category</h3>
-<ul>
-    <li><a href="{% url 'material_list' %}">All</a></li>
-    <li><a href="{% url 'material_list' %}?category=Book">Book</a></li>
-    <li><a href="{% url 'material_list' %}?category=Video">Video</a></li>
-    <li><a href="{% url 'material_list' %}?category=Audio">Audio</a></li>
-    <li><a href="{% url 'material_list' %}?category=Software">Software</a></li>
-    <li><a href="{% url 'material_list' %}?category=Image">Image</a></li>
-</ul>
+    <div class="row">
+        {% for material in materials %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{{ material.title }}</h5>
+                    <p class="card-text">
+                        <strong>Category:</strong> {{ material.category }}<br>
+                        <strong>Uploaded on:</strong> {{ material.upload_date }}
+                    </p>
+                    <a href="{% url 'material_detail' material.id %}" class="btn btn-primary btn-sm">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-muted text-center">No materials available.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 
-<ul>
-    {% for material in materials %}
-        <li>
-            <a href="{% url 'material_detail' material.id %}">{{ material.title }}</a>
-            ({{ material.category }}) - Uploaded on {{ material.upload_date }}
-        </li>
-    {% empty %}
-        <p>No materials available.</p>
-    {% endfor %}
-</ul>
 {% endblock %}

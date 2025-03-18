@@ -36,8 +36,19 @@ class Review(models.Model):
 
 class DownloadLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
     material = models.ForeignKey(Material, on_delete=models.CASCADE)
     download_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.user.username} downloaded {self.material.title}"
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio = models.TextField(blank=True, null=True)
+    birth_date = models.DateField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+
+    def __str__(self):
+        return self.user.username

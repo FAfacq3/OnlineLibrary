@@ -2,12 +2,13 @@ import os
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import FileResponse, HttpResponse
 from django.contrib.auth.decorators import login_required
-from .models import Material, DownloadLog
+from .models import Material, DownloadLog, UserProfile
 from .forms import MaterialForm, ReviewForm, SimpleUserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.db.models import Avg
+from .forms import UserProfileForm
 
 
 def home(request):
@@ -104,7 +105,32 @@ def add_review(request, material_id):
 def user_dashboard(request):
     user_materials = Material.objects.filter(uploaded_by=request.user)
     user_downloads = DownloadLog.objects.filter(user=request.user).order_by('-download_date')
-    return render(request, 'library/dashboard.html', {'user_materials': user_materials, 'user_downloads': user_downloads})
+
+    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+    user_profile.refresh_from_db()
+
+    return render(request, 'library/dashboard.html', {
+        'user_materials': user_materials,
+        'user_downloads': user_downloads,
+        'user_profile': user_profile
+    })
+
+@login_required
+def edit_profile(request):
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        form = UserProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            print("information updated:", profile.bio, profile.birth_date)
+            return redirect('dashboard')
+        else:
+            print("error:", form.errors)
+    else:
+        form = UserProfileForm(instance=profile)
+
+    return render(request, 'library/edit_profile.html', {'form': form})
 
 def register(request):
     if request.method == "POST":
@@ -163,11 +189,6 @@ def add_review(request, material_id):
             review.save()
             return redirect('material_detail', material_id=material.id)
     return redirect('material_detail', material_id=material.id)
-
-@login_required(login_url='login')
-def user_dashboard(request):
-    user_materials = Material.objects.filter(uploaded_by=request.user)
-    return render(request, 'library/dashboard.html', {'user_materials': user_materials})
 
 def txt_preview(request, material_id):
     material = get_object_or_404(Material, id=material_id)

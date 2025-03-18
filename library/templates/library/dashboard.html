@@ -1,27 +1,31 @@
 {% extends 'library/base.html' %}
 
 {% block content %}
-<h3>My Uploaded Materials</h3>
-<ul>
-    {% for material in user_materials %}
-        <li>
-            <a href="{% url 'material_detail' material.id %}">{{ material.title }}</a>
-            ({{ material.category }}) - Uploaded on {{ material.upload_date }}
-        </li>
-    {% empty %}
-        <p>You haven't uploaded any materials yet.</p>
-    {% endfor %}
-</ul>
+<div class="container mt-4">
+    <h2 class="text-center">Dashboard</h2>
 
-<h3>Download History</h3>
-<ul>
-    {% for log in user_downloads %}
-        <li>
-            {{ log.material.title }} ({{ log.material.category }}) - Downloaded on {{ log.download_date }}
-        </li>
-    {% empty %}
-        <p>You haven't downloaded any materials yet.</p>
-    {% endfor %}
-</ul>
+    <div class="card p-4 shadow-sm">
+        <p>---<strong>{{ user.username }}</strong></p>
 
+        <div class="text-center">
+            {% if user_profile.profile_picture %}
+                <img src="{{ user_profile.profile_picture.url }}" alt="Profile Picture" class="img-thumbnail" width="150">
+            {% else %}
+                <img src="/static/images/default_avatar.jpg" alt="Default Avatar" class="img-thumbnail" width="150">
+            {% endif %}
+        </div>
+
+
+        {% if user_profile %}
+            <p><strong>Personal Profile:</strong> {{ user_profile.bio|default:"No bio available" }}</p>
+            <p><strong>Birth Date:</strong> {{ user_profile.birth_date|default:"Not set" }}</p>
+        {% else %}
+            <p class="text-danger"><strong>Error:</strong> User profile not found!</p>
+        {% endif %}
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="{% url 'edit_profile' %}" class="btn btn-primary btn-sm">Edit Profile</a>
+        </div>
+    </div>
+
+</div>
 {% endblock %}

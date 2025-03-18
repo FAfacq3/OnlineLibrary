@@ -3,14 +3,7 @@
 {% block content %}
 <div class="container mt-4">
     <h2>Welcome to the Online Library</h2>
-
-    <form method="GET" action="{% url 'material_list' %}" class="d-flex">
-        <input type="text" name="q" class="form-control me-2" placeholder="Search materials..." value="{{ request.GET.q }}">
-        <button type="submit" class="btn btn-primary">Search</button>
-    </form>
-
     <hr>
-
     <h3>Browse by Category</h3>
     <ul class="list-group list-group-horizontal">
         <li class="list-group-item"><a href="{% url 'material_list' %}?category=Book">Book</a></li>
@@ -19,7 +12,6 @@
         <li class="list-group-item"><a href="{% url 'material_list' %}?category=Software">Software</a></li>
         <li class="list-group-item"><a href="{% url 'material_list' %}?category=Image">Image</a></li>
     </ul>
-
     <hr>
 
     <h3>Latest Materials</h3>

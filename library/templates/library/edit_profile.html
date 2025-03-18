@@ -1,0 +1,26 @@
+{% extends 'library/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">Edit Profile</h2>
+
+    <div class="card p-4 shadow-sm">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% if user_profile.profile_picture %}
+                <div class="text-center">
+                    <img src="{{ user_profile.profile_picture.url }}" alt="Profile Picture" class="img-thumbnail" width="150">
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                {{ form.as_p }}
+            </div>
+
+            <button type="submit" class="btn btn-success">Save Changes</button>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
