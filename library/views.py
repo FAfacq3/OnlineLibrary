@@ -132,14 +132,12 @@ def register(request):
         form = SimpleUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            user.set_password(user.password) 
             user.save()
-
             messages.success(request, "Account created successfully. Please log in.")
             return redirect('login')
     else:
         form = SimpleUserCreationForm()
-        
+
     return render(request, 'library/register.html', {'form': form})
 
 def user_login(request):
@@ -149,9 +147,12 @@ def user_login(request):
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
             user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('home')
+            if user:
+                if user.is_active:
+                    login(request, user)
+                    return redirect('home')
+                else:
+                    messages.error(request, "Your account has been disabled.")
             else:
                 messages.error(request, "Invalid username or password.")
     else:
