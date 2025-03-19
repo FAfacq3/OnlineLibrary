@@ -109,10 +109,14 @@ def add_review(request, material_id):
             review.user = request.user
             review.material = material
             review.save()
-            return redirect('material_detail', material_id=material.id)
-    else:
-        form = ReviewForm()
-    return render(request, 'library/add_review.html', {'form': form, 'material': material})
+            return JsonResponse({
+                "success": True,
+                "username": request.user.username,
+                "rating": review.rating,
+                "comment": review.comment,
+                "created_at": review.created_at.strftime("%Y-%m-%d %H:%M")
+            })
+    return JsonResponse({"success": False})
 
 @login_required(login_url='login')
 def user_dashboard(request):
@@ -178,19 +182,6 @@ def upload_material(request):
     else:
         form = MaterialForm()
     return render(request, 'library/upload_material.html', {'form': form})
-
-@login_required(login_url='login')
-def add_review(request, material_id):
-    material = get_object_or_404(Material, id=material_id)
-    if request.method == "POST":
-        form = ReviewForm(request.POST)
-        if form.is_valid():
-            review = form.save(commit=False)
-            review.user = request.user
-            review.material = material
-            review.save()
-            return redirect('material_detail', material_id=material.id)
-    return redirect('material_detail', material_id=material.id)
 
 @login_required(login_url='login')
 def user_dashboard(request):

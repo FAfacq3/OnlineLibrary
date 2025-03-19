@@ -18,15 +18,13 @@
                 {% if user.is_authenticated %}
                     <a href="{% url 'download_material' material.id %}" class="btn btn-primary">Download</a>
 
-                    <button id = "favourite-btn" type="submit" class="btn btn-warning" data-material-id="{{ material.id }}">
+                    <button id="favourite-btn" type="button" class="btn btn-warning" data-material-id="{{ material.id }}">
                         {% if material in user.profile.favourites.all %}
                             Remove Favourite
                         {% else %}
                             Add Favourite
                         {% endif %}
                     </button>
-
-                    <input type="hidden" id="csrf_token" value="{{ csrf_token }}">
                 {% else %}
                     <p><a href="{% url 'login' %}">Log in</a> to download this material.</p>
                 {% endif %}
@@ -55,7 +53,7 @@
                         <source src="{{ material.file.url }}" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
-                {% elif ".jpg" in file_ext or ".png" in file_ext or ".jfif" in file_ext or ".jpeg" in file_ext or ".gif" in file_ext %}
+                {% elif ".jpg" in file_ext or ".png" in file_ext or ".jpeg" in file_ext or ".gif" in file_ext %}
                     <img id="preview-image" src="{{ material.file.url }}" class="img-fluid rounded shadow" alt="Uploaded Image" />
                 {% elif ".txt" in file_ext %}
                     <iframe src="{% url 'txt_preview' material.id %}" width="100%" height="400px" class="border"></iframe>
@@ -65,7 +63,7 @@
                         Your browser does not support the audio element.
                     </audio>
                 {% else %}
-                    <p style="color: red;">No valid file format detected.</p>
+                    <p class="text-danger">No valid file format detected.</p>
                 {% endif %}
             {% endwith %}
         </div>
@@ -73,7 +71,7 @@
         <hr>
 
         <h3 class="mt-4">Reviews</h3>
-        <div class="border p-3 rounded">
+        <div id="review-section" class="border p-3 rounded">
             {% for review in reviews %}
                 <div class="border-bottom pb-2 mb-2">
                     <p><strong>{{ review.user.username }}</strong> rated: {{ review.rating }}/5</p>
@@ -87,8 +85,9 @@
 
         {% if user.is_authenticated %}
             <h4 class="mt-4">Add a Review</h4>
-            <form method="POST" action="{% url 'add_review' material.id %}" class="border p-3 rounded">
+            <form id="review-form" data-material-id="{{ material.id }}" class="border p-3 rounded">
                 {% csrf_token %}
+                
                 <div class="mb-3">
                     <label for="id_rating" class="form-label">Rating:</label>
                     {{ form.rating }}
@@ -102,9 +101,9 @@
         {% else %}
             <p><a href="{% url 'login' %}">Log in</a> to add a review.</p>
         {% endif %}
-
     </div>
 </div>
 
+<script src="{% static 'js/review.js' %}"></script>
 <script src="{% static 'js/favourite.js' %}"></script>
 {% endblock %}
