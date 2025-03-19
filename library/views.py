@@ -33,7 +33,7 @@ def material_list(request):
 
 def material_detail(request, material_id):
     material = get_object_or_404(Material, id=material_id)
-    reviews = material.reviews.all()
+    reviews = material.reviews.all().order_by('-created_at')
     form = ReviewForm()
 
     print("Material File URL:", material.file.url if material.file else "No file uploaded")
@@ -130,24 +130,17 @@ def user_dashboard(request):
 def register(request):
     if request.method == "POST":
         form = SimpleUserCreationForm(request.POST)
-        profile_form = UserProfileForm(request.POST, request.FILES)
-        if form.is_valid() and profile_form.is_valid():
+        if form.is_valid():
             user = form.save()
-            # user.set_password(user.password)
+            user.set_password(user.password) 
             user.save()
-
-            profile = profile_form.save(commit = False)
-            profile.user = user
-            if 'picture' in request.FILES:
-                profile.picture = request.FILES['picture']
-            profile.save()
 
             messages.success(request, "Account created successfully. Please log in.")
             return redirect('login')
     else:
-        profile_form = UserProfileForm()
         form = SimpleUserCreationForm()
-    return render(request, 'library/register.html', {'form': form, 'profile_form': profile_form})
+        
+    return render(request, 'library/register.html', {'form': form})
 
 def user_login(request):
     if request.method == "POST":
