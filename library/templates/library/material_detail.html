@@ -1,5 +1,5 @@
 {% extends 'library/base.html' %}
-
+{% load staticfiles %}
 {% block content %}
 <div class="container mt-4">
     <div class="card shadow-lg p-4">
@@ -17,16 +17,16 @@
             <div class="col-md-4 text-end">
                 {% if user.is_authenticated %}
                     <a href="{% url 'download_material' material.id %}" class="btn btn-primary">Download</a>
-                    <form method="POST" action="{% url 'favourite_material' material.id %}" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit", class="btn btn-warning">
-                            {% if material in user.profile.favourites.all %}
-                                Remove Favourite
-                            {% else %}
-                                Add Favourite
-                            {% endif %}
-                        </button>
-                    </form>
+
+                    <button id = "favourite-btn" type="submit" class="btn btn-warning" data-material-id="{{ material.id }}">
+                        {% if material in user.profile.favourites.all %}
+                            Remove Favourite
+                        {% else %}
+                            Add Favourite
+                        {% endif %}
+                    </button>
+
+                    <input type="hidden" id="csrf_token" value="{{ csrf_token }}">
                 {% else %}
                     <p><a href="{% url 'login' %}">Log in</a> to download this material.</p>
                 {% endif %}
@@ -106,5 +106,5 @@
     </div>
 </div>
 
-
+<script src="{% static 'js/favourite.js' %}"></script>
 {% endblock %}

@@ -1,6 +1,6 @@
 import os
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from .models import Material, DownloadLog, UserProfile
 from .forms import MaterialForm, ReviewForm, SimpleUserCreationForm, UserProfileForm
@@ -88,14 +88,16 @@ def delete_material(request, material_id):
 @login_required
 def favourite_material(request, material_id):
     material = get_object_or_404(Material, id=material_id)
-    user_profile = get_object_or_404(UserProfile, user=request.user)
+    user_profile = request.user.profile
 
     if material in user_profile.favourites.all():
-        user_profile.favourites.remove(material)
+       user_profile.favourites.remove(material)
+       status = "removed"
     else:
-        user_profile.favourites.add(material)
+       user_profile.favourites.add(material)
+       status = "added"
 
-    return redirect('material_detail', material_id = material.id)
+    return JsonResponse({"status": status})
 
 @login_required
 def add_review(request, material_id):
