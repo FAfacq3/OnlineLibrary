@@ -1,5 +1,5 @@
 from django import forms
-from .models import Material, Review
+from .models import Material, Review, UserProfile
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
@@ -33,3 +33,14 @@ class SimpleUserCreationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username', 'email', 'password1', 'password2']
+
+class UserProfileForm(forms.ModelForm):
+    picture = forms.ImageField(
+        required=False,
+        label="Profile Picture",
+        help_text="Upload a profile picture (optional)"
+    )
+
+    class Meta: 
+        model = UserProfile
+        fields = ['picture']

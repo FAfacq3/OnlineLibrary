@@ -17,11 +17,23 @@
 <ul>
     {% for log in user_downloads %}
         <li>
-            {{ log.material.title }} ({{ log.material.category }}) - Downloaded on {{ log.download_date }}
+            <a href="{% url 'material_detail' log.material.id %}">{{ log.material.title }}</a>
+             ({{ log.material.category }}) - Downloaded on {{ log.download_date }}
         </li>
     {% empty %}
         <p>You haven't downloaded any materials yet.</p>
     {% endfor %}
+</ul>
+
+<h3>Favourites</h3>
+<ul>
+    {% for favourite in user_favourites %}
+     <li>
+        <a href = "{% url 'material_detail' favourite.id%}">{{favourite.title}}</a> ({{favourite.category}})
+     </li>
+     {% empty %}
+        <p>You haven't favourited any materials yet.</p>
+     {%endfor%}
 </ul>
 
 {% endblock %}

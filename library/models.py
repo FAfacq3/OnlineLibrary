@@ -41,3 +41,11 @@ class DownloadLog(models.Model):
 
     def __str__(self):
         return f"{self.user.username} downloaded {self.material.title}"
+     
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    favourites = models.ManyToManyField(Material)
+    picture = models.ImageField(upload_to='profile_images/', blank = True)
+
+    def __str__(self):
+        return self.user.username
