@@ -7,14 +7,14 @@
     <div class="card p-4 shadow-sm">
         <p>---<strong>{{ user.username }}</strong></p>
 
+        {% load static %}
         <div class="text-center">
             {% if user_profile.profile_picture %}
-                <img src="{{ user_profile.profile_picture.url }}" alt="Profile Picture" class="img-thumbnail" width="150">
+                <img src="/{{ user_profile.profile_picture }}" alt="Profile Picture" class="img-thumbnail" width="150">
             {% else %}
-                <img src="/static/images/default_avatar.jpg" alt="Default Avatar" class="img-thumbnail" width="150">
+                <img src="{% static 'images/Profile picture/default_avatar.jpg' %}" alt="Default Avatar" class="img-thumbnail" width="150">
             {% endif %}
         </div>
-
 
         {% if user_profile %}
             <p><strong>Personal Profile:</strong> {{ user_profile.bio|default:"No bio available" }}</p>

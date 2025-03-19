@@ -9,6 +9,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.db.models import Avg
 from .forms import UserProfileForm
+from django.conf import settings
 
 
 def home(request):
@@ -118,19 +119,36 @@ def user_dashboard(request):
 @login_required
 def edit_profile(request):
     profile, created = UserProfile.objects.get_or_create(user=request.user)
-
     if request.method == "POST":
-        form = UserProfileForm(request.POST, instance=profile)
+        form = UserProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
-            form.save()
-            print("information updated:", profile.bio, profile.birth_date)
+            profile_picture = request.FILES.get('profile_picture')
+
+            if profile_picture:
+                static_path = os.path.join(settings.BASE_DIR, 'static/images/Profile picture/')
+                if not os.path.exists(static_path):
+                    os.makedirs(static_path)
+
+                picture_path = os.path.join(static_path, f"{request.user.username}.jpg")
+
+                if profile.profile_picture:
+                    old_picture_path = os.path.join(settings.BASE_DIR, profile.profile_picture.path)
+                    if os.path.exists(old_picture_path):
+                        os.remove(old_picture_path)
+
+                with open(picture_path, 'wb+') as destination:
+                    for chunk in profile_picture.chunks():
+                        destination.write(chunk)
+
+                profile.profile_picture = f"static/images/Profile picture/{request.user.username}.jpg"
+                profile.save()
+
             return redirect('dashboard')
-        else:
-            print("error:", form.errors)
+
     else:
         form = UserProfileForm(instance=profile)
 
-    return render(request, 'library/edit_profile.html', {'form': form})
+    return render(request, 'library/edit_profile.html', {'form': form, 'user_profile': profile})
 
 def register(request):
     if request.method == "POST":

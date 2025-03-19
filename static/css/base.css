@@ -1,0 +1,73 @@
+/* 全局默认样式 */
+body {
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    font-family: "Roboto", Arial, sans-serif;
+    color: #333;
+    background: #f5f5f5;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+h1, h2, h3, h4, h5 {
+    color: #333;
+    font-weight: bold;
+}
+h1 { font-size: 22px; }
+h2 { font-size: 18px; }
+h3 { font-size: 16px; }
+h4 { font-size: 14px; }
+h5 { font-size: 12px; }
+
+.button, input[type=submit], input[type=button] {
+    background: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.button:hover, input[type=submit]:hover {
+    background: #0056b3;
+}
+
+input, textarea {
+    border: 1px solid #ddd;
+    padding: 8px;
+    border-radius: 5px;
+    width: 100%;
+}
+input:focus, textarea:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+td, th {
+    border-bottom: 1px solid #eee;
+    padding: 10px;
+}
+th {
+    background: #f6f6f6;
+}
+
+#header {
+    background: #343a40;
+    color: white;
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

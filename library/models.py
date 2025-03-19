@@ -43,6 +43,9 @@ class DownloadLog(models.Model):
     def __str__(self):
         return f"{self.user.username} downloaded {self.material.title}"
 
+def user_directory_path(instance, filename):
+    return f"static/images/Profile picture/{instance.user.username}.jpg"
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True, null=True)
