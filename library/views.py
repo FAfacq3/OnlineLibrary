@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.db.models import Avg
+import random
 
 
 def home(request):
@@ -43,6 +44,16 @@ def material_detail(request, material_id):
         'reviews': reviews,
         'form': form
     })
+    
+    
+def random_material(request):
+    materials = Material.objects.all()
+    if materials.exists():
+        random_material = random.choice(materials)
+        return redirect('material_detail', material_id=random_material.id)
+    else:
+        messages.warning(request, "No materials available.")
+        return redirect('home')
 
 @login_required(login_url='login')
 def upload_material(request):
