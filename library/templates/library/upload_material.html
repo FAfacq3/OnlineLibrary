@@ -1,95 +1,104 @@
 {% extends 'library/base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2 class="text-center mb-4">Upload Material</h2>
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Upload New Material</h2>
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-success">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
 
-    <form method="POST" enctype="multipart/form-data" class="card p-4 shadow-sm">
-        {% csrf_token %}
+  <form method="POST" enctype="multipart/form-data" class="card p-4 shadow-sm bg-light">
+    {% csrf_token %}
 
-        <div class="mb-3">
-            <label for="id_title" class="form-label">Title:</label>
-            {{ form.title }}
-        </div>
+    <div class="mb-3">
+      {{ form.title.label_tag }}
+      {{ form.title }}
+    </div>
 
-        <div class="mb-3">
-            <label for="id_description" class="form-label">Description:</label>
-            {{ form.description }}
-        </div>
+    <div class="mb-3">
+      {{ form.description.label_tag }}
+      {{ form.description }}
+    </div>
 
-        <div class="mb-3">
-            <label for="id_category" class="form-label">Category:</label>
-            {{ form.category }}
-        </div>
+    <div class="mb-3">
+      {{ form.category.label_tag }}
+      {{ form.category }}
+    </div>
 
-        <div class="mb-3">
-            <label for="id_author" class="form-label">Author:</label>
-            {{ form.author }}
-        </div>
+    <div class="mb-3">
+      {{ form.author.label_tag }}
+      {{ form.author }}
+    </div>
 
-        <div class="mb-3">
-            <label for="id_release_date" class="form-label">Release Date:</label>
-            {{ form.release_date }}
-        </div>
+    <div class="mb-3">
+      {{ form.release_date.label_tag }}
+      {{ form.release_date }}
+    </div>
 
-        <div class="mb-3">
-            <label for="id_file" class="form-label">Upload File:</label>
-            {{ form.file }}
-        </div>
+    <div class="mb-3">
+      {{ form.file.label_tag }}
+      {{ form.file }}
+      <div id="file-name" class="text-muted small mt-1"></div>
+      <div id="file-size" class="text-muted small"></div>
+    </div>
 
-        <button type="submit" class="btn btn-primary w-100">Upload</button>
-    </form>
+    <div id="upload-progress" class="progress mb-3 d-none">
+      <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%">0%</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Upload</button>
+  </form>
 </div>
 
 <script>
-    document.getElementById("id_file").addEventListener("change", function() {
-        var file = this.files[0];
-        if (file) {
-            var fileName = file.name;
-            var fileSize = (file.size / 1024 / 1024).toFixed(2) + " MB";
-            document.getElementById("file-name").innerText = "Selected file: " + fileName;
-            document.getElementById("file-size").innerText = "File size: " + fileSize;
+  const fileInput = document.getElementById("id_file");
+  const fileNameDisplay = document.getElementById("file-name");
+  const fileSizeDisplay = document.getElementById("file-size");
 
-            var allowedExtensions = [".pdf", ".mp4", ".txt", ".jpg", ".png", ".docx"];
-            var fileExtension = fileName.slice(fileName.lastIndexOf(".")).toLowerCase();
+  fileInput.addEventListener("change", function () {
+    const file = this.files[0];
+    if (file) {
+      const fileName = file.name;
+      const fileSize = (file.size / 1024 / 1024).toFixed(2) + " MB";
+      fileNameDisplay.textContent = "Selected file: " + fileName;
+      fileSizeDisplay.textContent = "File size: " + fileSize;
 
-            if (!allowedExtensions.includes(fileExtension)) {
-                alert("Invalid file type! Allowed types: PDF, MP4, TXT, JPG, PNG, DOCX");
-                this.value = "";
-                document.getElementById("file-name").innerText = "";
-                document.getElementById("file-size").innerText = "";
-            }
-        }
-    });
+      const allowed = [".pdf", ".mp4", ".txt", ".jpg", ".png", ".docx"];
+      const extension = fileName.slice(fileName.lastIndexOf(".")).toLowerCase();
+      if (!allowed.includes(extension)) {
+        alert("Invalid file type! Allowed: PDF, MP4, TXT, JPG, PNG, DOCX");
+        this.value = "";
+        fileNameDisplay.textContent = "";
+        fileSizeDisplay.textContent = "";
+      }
+    }
+  });
 
-    document.querySelector("form").addEventListener("submit", function(event) {
-        var file = document.getElementById("id_file").files[0];
-        if (!file) {
-            alert("Please select a file before uploading!");
-            event.preventDefault();
-            return;
-        }
+  document.querySelector("form").addEventListener("submit", function (event) {
+    const file = fileInput.files[0];
+    if (!file) {
+      alert("Please select a file before uploading!");
+      event.preventDefault();
+      return;
+    }
 
-        document.getElementById("upload-progress").classList.remove("d-none");
+    const progress = document.getElementById("progress-bar");
+    document.getElementById("upload-progress").classList.remove("d-none");
 
-        var progress = document.getElementById("progress-bar");
-        var width = 0;
-        var interval = setInterval(function() {
-            if (width >= 100) {
-                clearInterval(interval);
-            } else {
-                width += 10;
-                progress.style.width = width + "%";
-                progress.innerText = width + "%";
-            }
-        }, 300);
-    });
+    let width = 0;
+    const interval = setInterval(() => {
+      if (width >= 100) {
+        clearInterval(interval);
+      } else {
+        width += 10;
+        progress.style.width = width + "%";
+        progress.innerText = width + "%";
+      }
+    }, 200);
+  });
 </script>
-
 {% endblock %}
