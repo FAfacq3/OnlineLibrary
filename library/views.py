@@ -183,8 +183,11 @@ def register(request):
         if form.is_valid() and profile_form.is_valid():
             user = form.save()
 
-            profile = profile_form.save(commit=False)
-            profile.user = user
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            profile.bio = profile_form.cleaned_data.get('bio')
+            profile.birth_date = profile_form.cleaned_data.get('birth_date')
+            if 'picture' in request.FILES:
+                profile.picture = request.FILES['picture']
             profile.save()
 
             messages.success(request, "Account created successfully. Please log in.")
@@ -197,6 +200,7 @@ def register(request):
         'form': form,
         'profile_form': profile_form,
     })
+
 
 def user_login(request):
     if request.method == "POST":
