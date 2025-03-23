@@ -40,7 +40,6 @@ class Command(BaseCommand):
                 category=random.choice(categories),
                 uploaded_by=user
             )
-            # Optional: dummy file
             material.file.save(f'testfile_{i}.txt', ContentFile('Sample content for testing.'))
             material.save()
             print(f'Created material: {material.title} by {user.username}')
