@@ -23,13 +23,18 @@ document.addEventListener("DOMContentLoaded", function () {
             const newReview = document.createElement("div");
             newReview.classList.add("border-bottom", "pb-2", "mb-2");
             newReview.innerHTML = `
-                    <p><strong>${data.username}</strong> rated: ${data.rating}/5</p>
-                    <p>${data.comment}</p>
-                    <p class="text-muted small">${data.created_at}</p>
-                `;
-
+              <p><strong>${data.username}</strong> rated: ${data.rating}/5</p>
+              <p>${data.comment}</p>
+              <p class="text-muted small">${data.created_at}</p>
+            `;
             reviewSection.prepend(newReview);
             reviewForm.reset();
+            const modalEl = document.getElementById('reviewModal');
+            if (modalEl) {
+              const modal = bootstrap.Modal.getInstance(modalEl);
+              if (modal) modal.hide();
+            }
+
           } else {
             alert("Error submitting review. Please try again.");
           }

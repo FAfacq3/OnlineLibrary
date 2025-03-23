@@ -3,103 +3,116 @@
 {% block content %}
 <div class="container mt-4">
     <div class="card shadow-lg p-4">
-        <h2 class="text-center mb-3">{{ material.title }}</h2>
 
-        <div class="row">
-            <div class="col-md-8">
-                <p><strong>Category:</strong> {{ material.category }}</p>
-                <p><strong>Description:</strong> {{ material.description }}</p>
-                <p><strong>Author:</strong> {{ material.author }}</p>
-                <p><strong>Release Date:</strong> {{ material.release_date }}</p>
-                <p><strong>Uploaded by:</strong> {{ material.uploaded_by.username }}</p>
-                <p><strong>Upload Date:</strong> {{ material.upload_date }}</p>
-            </div>
-            <div class="col-md-4 text-end">
-                {% if user.is_authenticated %}
-                    <a href="{% url 'download_material' material.id %}" class="btn btn-primary">Download</a>
-
-                    <button id="favourite-btn" type="button" class="btn btn-warning" data-material-id="{{ material.id }}">
-                        {% if material in user.profile.favourites.all %}
-                            Remove Favourite
-                        {% else %}
-                            Add Favourite
-                        {% endif %}
-                    </button>
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+          <h2 class="fw-bold">{{ material.title }}</h2>
+          <div class="d-flex gap-2 mt-2 mt-md-0">
+            {% if user.is_authenticated %}
+              <a href="{% url 'download_material' material.id %}" class="btn btn-primary btn-sm">Download</a>
+              <button id="favourite-btn" type="button" class="btn btn-warning btn-sm" data-material-id="{{ material.id }}">
+                {% if material in user.profile.favourites.all %}
+                  Remove Favourite
                 {% else %}
-                    <p><a href="{% url 'login' %}">Log in</a> to download this material.</p>
+                  Add Favourite
                 {% endif %}
-
-                {% if user == material.uploaded_by or user.is_superuser %}
-                    <form method="POST" action="{% url 'delete_material' material.id %}" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger"
-                                onclick="return confirm('Are you sure you want to delete this material?');">
-                            Delete
-                        </button>
-                    </form>
-                {% endif %}
-            </div>
+              </button>
+            {% endif %}
+            {% if user == material.uploaded_by or user.is_superuser %}
+              <form method="POST" action="{% url 'delete_material' material.id %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm"
+                  onclick="return confirm('Are you sure you want to delete this material?');">
+                  Delete
+                </button>
+              </form>
+            {% endif %}
+          </div>
         </div>
 
-        <hr>
-
-        <h3 class="mt-4">File Preview</h3>
-        <div class="border p-3 rounded bg-light">
-            {% with file_ext=material.file.url|lower %}
-                {% if ".pdf" in file_ext %}
-                    <iframe src="{{ material.file.url }}" width="100%" height="500px" class="border"></iframe>
-                {% elif ".mp4" in file_ext %}
-                    <video width="100%" controls class="rounded shadow">
-                        <source src="{{ material.file.url }}" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                {% elif ".jpg" in file_ext or ".png" in file_ext or ".jpeg" in file_ext or ".gif" in file_ext %}
-                    <img id="preview-image" src="{{ material.file.url }}" class="img-fluid rounded shadow" alt="Uploaded Image" />
-                {% elif ".txt" in file_ext %}
-                    <iframe src="{% url 'txt_preview' material.id %}" width="100%" height="400px" class="border"></iframe>
-                {% elif ".mp3" in file_ext or ".wav" in file_ext or ".ogg" in file_ext %}
-                    <audio controls class="w-100">
-                        <source src="{{ material.file.url }}" type="audio/{{ file_ext|slice:'-3:' }}">
-                        Your browser does not support the audio element.
-                    </audio>
-                {% else %}
-                    <p class="text-danger">No valid file format detected.</p>
-                {% endif %}
-            {% endwith %}
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <p><strong>Category:</strong> {{ material.category }}</p>
+            <p><strong>Description:</strong> {{ material.description }}</p>
+            <p><strong>Author:</strong> {{ material.author|default:"Unknown" }}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Release Date:</strong> {{ material.release_date }}</p>
+            <p><strong>Uploaded by:</strong> {{ material.uploaded_by.username }}</p>
+            <p><strong>Upload Date:</strong> {{ material.upload_date }}</p>
+          </div>
         </div>
 
-        <hr>
+        <h4 class="mt-4 mb-3">File Preview</h4>
+        <div class="border p-3 rounded bg-white shadow-sm">
+          {% with file_ext=material.file.url|lower %}
+            {% if ".pdf" in file_ext %}
+              <iframe src="{{ material.file.url }}" width="100%" height="500px" class="border rounded"></iframe>
+            {% elif ".mp4" in file_ext %}
+              <video width="100%" controls class="rounded shadow">
+                <source src="{{ material.file.url }}" type="video/mp4">
+              </video>
+            {% elif ".jpg" in file_ext or ".png" in file_ext or ".jpeg" in file_ext or ".gif" in file_ext %}
+              <img src="{{ material.file.url }}" class="img-fluid rounded shadow" alt="Uploaded Image" />
+            {% elif ".txt" in file_ext %}
+              <iframe src="{% url 'txt_preview' material.id %}" width="100%" height="400px" class="border"></iframe>
+            {% elif ".mp3" in file_ext or ".wav" in file_ext or ".ogg" in file_ext %}
+              <audio controls class="w-100">
+                <source src="{{ material.file.url }}" type="audio/{{ file_ext|slice:'-3:' }}">
+              </audio>
+            {% else %}
+              <p class="text-danger">Unsupported file format.</p>
+            {% endif %}
+          {% endwith %}
+        </div>
 
-        <h3 class="mt-4">Reviews</h3>
-        <div id="review-section" class="border p-3 rounded">
-            {% for review in reviews %}
-                <div class="border-bottom pb-2 mb-2">
-                    <p><strong>{{ review.user.username }}</strong> rated: {{ review.rating }}/5</p>
-                    <p>{{ review.comment }}</p>
-                    <p class="text-muted small">{{ review.created_at }}</p>
-                </div>
-            {% empty %}
-                <p>No reviews yet. Be the first to review!</p>
-            {% endfor %}
+        <h4 class="mt-5 mb-3">Reviews</h4>
+        <div id="review-section" class="bg-light p-3 rounded border">
+          {% for review in reviews %}
+            <div class="border-bottom pb-2 mb-2">
+              <p class="mb-1"><strong>{{ review.user.username }}</strong> rated: {{ review.rating }}/5</p>
+              <p class="mb-1">{{ review.comment }}</p>
+              <p class="text-muted small">{{ review.created_at }}</p>
+            </div>
+          {% empty %}
+            <p class="text-muted">No reviews yet. Be the first to review!</p>
+          {% endfor %}
         </div>
 
         {% if user.is_authenticated %}
-            <h4 class="mt-4">Add a Review</h4>
-            <form id="review-form" data-material-id="{{ material.id }}" class="border p-3 rounded">
-                {% csrf_token %}
-                
-                <div class="mb-3">
-                    <label for="id_rating" class="form-label">Rating:</label>
-                    {{ form.rating }}
-                </div>
-                <div class="mb-3">
-                    <label for="id_comment" class="form-label">Comment:</label>
-                    <textarea class="form-control" id="id_comment" name="comment" rows="4" placeholder="Write your review here..."></textarea>
-                </div>
-                <button type="submit" class="btn btn-success w-100">Submit Review</button>
-            </form>
+          <div class="text-end mt-4">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#reviewModal">
+              Add Your Review
+            </button>
+          </div>
+
+          <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form id="review-form" data-material-id="{{ material.id }}">
+                  {% csrf_token %}
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="reviewModalLabel">Add Your Review</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-3">
+                      <label class="form-label">Rating:</label>
+                      {{ form.rating }}
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Comment:</label>
+                      {{ form.comment }}
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary w-100">Submit Review</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
         {% else %}
-            <p><a href="{% url 'login' %}">Log in</a> to add a review.</p>
+          <p class="mt-3"><a href="{% url 'login' %}">Log in</a> to add a review.</p>
         {% endif %}
     </div>
 </div>

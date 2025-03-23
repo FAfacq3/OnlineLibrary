@@ -1,5 +1,4 @@
 from datetime import date
-
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -44,8 +43,11 @@ class DownloadLog(models.Model):
      
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    favourites = models.ManyToManyField(Material)
-    picture = models.ImageField(upload_to='profile_images/', blank = True)
+    favourites = models.ManyToManyField(Material, blank=True)
+    picture = models.ImageField(upload_to='profile_images/', blank=True, null=True)
+    bio = models.TextField(blank=True)
+    birth_date = models.DateField(blank=True, null=True)
 
     def __str__(self):
         return self.user.username
+

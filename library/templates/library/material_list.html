@@ -1,27 +1,30 @@
 {% extends 'library/base.html' %}
+{% load static %}
 
 {% block content %}
-<h2>Materials</h2>
+<div class="container my-4">
+  <h2 class="mb-4">Available Materials</h2>
 
-<!-- 资料类别筛选 -->
-<h3>Filter by Category</h3>
-<ul>
-    <li><a href="{% url 'material_list' %}">All</a></li>
-    <li><a href="{% url 'material_list' %}?category=Book">Book</a></li>
-    <li><a href="{% url 'material_list' %}?category=Video">Video</a></li>
-    <li><a href="{% url 'material_list' %}?category=Audio">Audio</a></li>
-    <li><a href="{% url 'material_list' %}?category=Software">Software</a></li>
-    <li><a href="{% url 'material_list' %}?category=Image">Image</a></li>
-</ul>
-
-<ul>
-    {% for material in materials %}
-        <li>
-            <a href="{% url 'material_detail' material.id %}">{{ material.title }}</a>
-            ({{ material.category }}) - Uploaded on {{ material.upload_date }}
-        </li>
-    {% empty %}
-        <p>No materials available.</p>
-    {% endfor %}
-</ul>
+  {% if materials %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      {% for material in materials %}
+        <div class="col">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">
+                <a href="{% url 'material_detail' material.id %}" class="text-decoration-none">
+                  {{ material.title }}
+                </a>
+              </h5>
+              <p class="card-text mb-2"><strong>Category:</strong> {{ material.category }}</p>
+              <p class="card-text text-muted mt-auto"><small>Uploaded on {{ material.upload_date }}</small></p>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">No materials available.</div>
+  {% endif %}
+</div>
 {% endblock %}

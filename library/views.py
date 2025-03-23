@@ -15,9 +15,12 @@ def home(request):
     latest_materials = Material.objects.all().order_by('-upload_date')[:5]
     top_materials = Material.objects.annotate(avg_rating=Avg('reviews__rating')).order_by('-avg_rating')[:5]
 
+    categories = ['Book', 'Video', 'Audio', 'Software', 'Image']
+
     return render(request, 'library/home.html', {
         'latest_materials': latest_materials,
-        'top_materials': top_materials
+        'top_materials': top_materials,
+        'categories': categories,
     })
 
 def material_list(request):
@@ -44,8 +47,7 @@ def material_detail(request, material_id):
         'reviews': reviews,
         'form': form
     })
-    
-    
+
 def random_material(request):
     materials = Material.objects.all()
     if materials.exists():
@@ -135,21 +137,66 @@ def user_dashboard(request):
     user_downloads = DownloadLog.objects.filter(user=request.user).order_by('-download_date')
     user_profile = get_object_or_404(UserProfile, user=request.user)
     user_favourites = user_profile.favourites.all()
-    print("HFJDSKLHFJSDKLHFJSDKLHFS", user_favourites)
-    return render(request, 'library/dashboard.html', {'user_materials': user_materials, 'user_downloads': user_downloads, 'user_favourites':user_favourites})
+    return render(request, 'library/dashboard.html', {
+        'user_materials': user_materials,
+        "user_favourites": user_favourites,
+        'user_downloads':user_downloads,
+        'user_profile': user_profile
+    })
+
+def txt_preview(request, material_id):
+    material = get_object_or_404(Material, id=material_id)
+
+    if not material.file.url.endswith('.txt'):
+        return HttpResponse("Invalid file type", status=400)
+
+    file_path = material.file.path
+
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+    except Exception as e:
+        return HttpResponse(f"Error reading file: {e}", status=500)
+
+    return HttpResponse(f"<pre style='white-space: pre-wrap;'>{content}</pre>", content_type="text/html")
+
+@login_required
+def edit_profile(request):
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard')
+    else:
+        form = UserProfileForm(instance=profile)
+
+    return render(request, 'library/edit_profile.html', {
+        'form': form
+    })
 
 def register(request):
     if request.method == "POST":
         form = SimpleUserCreationForm(request.POST)
-        if form.is_valid():
+        profile_form = UserProfileForm(request.POST, request.FILES)
+        if form.is_valid() and profile_form.is_valid():
             user = form.save()
-            user.save()
+
+            profile = profile_form.save(commit=False)
+            profile.user = user
+            profile.save()
+
             messages.success(request, "Account created successfully. Please log in.")
             return redirect('login')
     else:
         form = SimpleUserCreationForm()
+        profile_form = UserProfileForm()
 
-    return render(request, 'library/register.html', {'form': form})
+    return render(request, 'library/register.html', {
+        'form': form,
+        'profile_form': profile_form,
+    })
 
 def user_login(request):
     if request.method == "POST":
@@ -188,26 +235,3 @@ def upload_material(request):
         form = MaterialForm()
     return render(request, 'library/upload_material.html', {'form': form})
 
-@login_required(login_url='login')
-def user_dashboard(request):
-    user_materials = Material.objects.filter(uploaded_by=request.user)
-    user_downloads = DownloadLog.objects.filter(user=request.user).order_by('-download_date')
-    user_profile = get_object_or_404(UserProfile, user=request.user)
-    user_favourites = user_profile.favourites.all()
-    return render(request, 'library/dashboard.html', {'user_materials': user_materials, "user_favourites": user_favourites, 'user_downloads':user_downloads})
-
-def txt_preview(request, material_id):
-    material = get_object_or_404(Material, id=material_id)
-
-    if not material.file.url.endswith('.txt'):
-        return HttpResponse("Invalid file type", status=400)
-
-    file_path = material.file.path
-
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            content = file.read()
-    except Exception as e:
-        return HttpResponse(f"Error reading file: {e}", status=500)
-
-    return HttpResponse(f"<pre style='white-space: pre-wrap;'>{content}</pre>", content_type="text/html")

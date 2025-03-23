@@ -17,6 +17,14 @@ class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
         fields = ['rating', 'comment']
+        widgets = {
+            'rating': forms.Select(attrs={'class': 'form-select'}),
+            'comment': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Write your review here...'
+            }),
+        }
 
 class SimpleUserCreationForm(UserCreationForm):
     password1 = forms.CharField(
@@ -38,9 +46,26 @@ class UserProfileForm(forms.ModelForm):
     picture = forms.ImageField(
         required=False,
         label="Profile Picture",
-        help_text="Upload a profile picture (optional)"
+        help_text="Upload a profile picture (optional)",
+        widget=forms.ClearableFileInput(attrs={
+            'class': 'form-control',
+            'id': 'id_picture'
+        })
     )
 
-    class Meta: 
+    class Meta:
         model = UserProfile
-        fields = ['picture']
+        fields = ['picture', 'bio', 'birth_date']
+        widgets = {
+            'bio': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'id': 'id_bio',
+                'placeholder': 'Write something about yourself'
+            }),
+            'birth_date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control',
+                'id': 'id_birth_date'
+            }),
+        }

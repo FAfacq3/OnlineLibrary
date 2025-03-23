@@ -1,0 +1,48 @@
+{% extends 'library/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-4">
+  <h2 class="mb-4">Edit Your Profile</h2>
+
+  <div class="row">
+    <div class="col-md-4 mb-4 text-center">
+      <h5>Current Avatar</h5>
+      {% if request.user.userprofile.picture %}
+        <img src="{{ request.user.userprofile.picture.url }}"
+             alt="Current Avatar"
+             class="rounded-circle img-thumbnail mb-3"
+             style="width: 150px; height: 150px; object-fit: cover;">
+      {% else %}
+        <img src="{% static 'images/default_profile_pic.jpg' %}"
+             alt="Default Avatar"
+             class="rounded-circle img-thumbnail mb-3"
+             style="width: 150px; height: 150px; object-fit: cover;">
+      {% endif %}
+    </div>
+
+    <div class="col-md-8">
+      <form method="POST" enctype="multipart/form-data" class="p-4 border rounded bg-light shadow-sm">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          {{ form.picture.label_tag }}
+          {{ form.picture }}
+        </div>
+
+        <div class="mb-3">
+          {{ form.bio.label_tag }}
+          {{ form.bio }}
+        </div>
+
+        <div class="mb-3">
+          {{ form.birth_date.label_tag }}
+          {{ form.birth_date }}
+        </div>
+
+        <button type="submit" class="btn btn-success w-100">Save Changes</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

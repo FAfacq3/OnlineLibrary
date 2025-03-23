@@ -14,10 +14,12 @@
     {% if request.resolver_match.url_name not in 'login register' %}
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
-                <a class="navbar-brand" href="{% url 'home' %}">📚 Online Library</a>
+                <a class="navbar-brand" href="{% url 'home' %}">Online Library</a>
                 <form class="d-flex" method="GET" action="{% url 'material_list' %}">
-                    <input class="form-control me-2" type="search" name="q" placeholder="Search materials..." value="{{ request.GET.q }}">
-                    <button class="btn btn-outline-light" type="submit">Search</button>
+                    {% if request.resolver_match.url_name != 'home' %}
+                        <input class="form-control me-2" type="search" name="q" placeholder="Search materials..." value="{{ request.GET.q }}">
+                        <button class="btn btn-outline-light" type="submit">Search</button>
+                    {% endif %}
                 </form>
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
@@ -30,7 +32,11 @@
                             <img src="{% static 'images/default_profile_pic.jpg' %}" alt = "Default Avatar", style="width: 40px; height: 40px; border-radius: 50%;">
                         {% endif %}
                     {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+                        <li class="nav-item">
+                          <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#loginModal">
+                            Login
+                          </button>
+                        </li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>
                     {% endif %}
                 </ul>
@@ -50,7 +56,6 @@
         {% if request.resolver_match.url_name != 'home' %}
             <div class="container text-center mt-4">
                 <button class="btn btn-outline-secondary me-2" onclick="history.back()">Back</button>
-                <a href="{% url 'home' %}" class="btn btn-primary">Home</a>
             </div>
         {% endif %}
     </main>
@@ -60,6 +65,40 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+          <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+            <div class="modal-header bg-primary text-white">
+              <h5 class="modal-title" id="loginModalLabel">Login</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+              {% if form.errors %}
+                <div class="alert alert-danger">Invalid username or password.</div>
+              {% endif %}
+              <div class="mb-3">
+                <label for="id_username" class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" id="id_username" required>
+              </div>
+              <div class="mb-3">
+                <label for="id_password" class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" id="id_password" required>
+              </div>
+            </div>
+
+            <div class="modal-footer justify-content-between">
+              <a href="{% url 'register' %}" class="btn btn-link">Don't have an account?</a>
+              <button type="submit" class="btn btn-success">Login</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
 </body>
 
 </html>

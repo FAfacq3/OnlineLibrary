@@ -1,39 +1,98 @@
 {% extends 'library/base.html' %}
-
+{% load static %}
 {% block content %}
-<h3>My Uploaded Materials</h3>
-<ul>
-    {% for material in user_materials %}
-        <li>
-            <a href="{% url 'material_detail' material.id %}">{{ material.title }}</a>
-            ({{ material.category }}) - Uploaded on {{ material.upload_date }}
-        </li>
-    {% empty %}
-        <p>You haven't uploaded any materials yet.</p>
-    {% endfor %}
-</ul>
 
-<h3>Download History</h3>
-<ul>
-    {% for log in user_downloads %}
-        <li>
-            <a href="{% url 'material_detail' log.material.id %}">{{ log.material.title }}</a>
-             ({{ log.material.category }}) - Downloaded on {{ log.download_date }}
-        </li>
-    {% empty %}
-        <p>You haven't downloaded any materials yet.</p>
-    {% endfor %}
-</ul>
+<div class="container my-4">
+  <h2 class="mb-4">My Dashboard</h2>
 
-<h3>Favourites</h3>
-<ul>
-    {% for favourite in user_favourites %}
-     <li>
-        <a href = "{% url 'material_detail' favourite.id%}">{{favourite.title}}</a> ({{favourite.category}})
-     </li>
-     {% empty %}
-        <p>You haven't favourited any materials yet.</p>
-     {%endfor%}
-</ul>
+  <div class="card mb-4 shadow-sm position-relative">
+    <div class="card-body d-flex align-items-center">
+      {% if user_profile.picture %}
+        <img src="{{ user_profile.picture.url }}" alt="Profile Picture"
+             class="rounded-circle me-4 shadow-sm"
+             style="width: 90px; height: 90px; object-fit: cover;">
+      {% else %}
+        <img src="{% static 'images/default_profile_pic.jpg' %}" alt="Default Avatar"
+             class="rounded-circle me-4 shadow-sm"
+             style="width: 90px; height: 90px; object-fit: cover;">
+      {% endif %}
+
+      <div>
+        <h5 class="mb-1">{{ request.user.username }}</h5>
+        {% if user_profile.bio %}
+          <p class="mb-1 text-muted"><strong>Bio:</strong> {{ user_profile.bio }}</p>
+        {% endif %}
+        {% if user_profile.birth_date %}
+          <p class="mb-0 text-muted"><strong>Birth Date:</strong> {{ user_profile.birth_date }}</p>
+        {% endif %}
+      </div>
+
+      <a href="{% url 'edit_profile' %}" class="btn btn-outline-primary btn-sm position-absolute top-0 end-0 m-2">
+        Edit Profile
+      </a>
+    </div>
+  </div>
+
+  <div class="mb-5">
+    <h4 class="mb-3">Uploaded Materials</h4>
+    {% if user_materials %}
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for material in user_materials %}
+          <div class="col">
+            <div class="card h-100 shadow-sm border-0">
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title">
+                  <a href="{% url 'material_detail' material.id %}" class="text-decoration-none">
+                    {{ material.title }}
+                  </a>
+                </h5>
+                <p class="card-text text-muted mb-1"><strong>Category:</strong> {{ material.category }}</p>
+                <p class="card-text text-muted mt-auto"><small>{{ material.upload_date }}</small></p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted fst-italic">You haven't uploaded any materials yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="mb-5">
+    <h4 class="mb-3">Download History</h4>
+    {% if user_downloads %}
+      <ul class="list-group shadow-sm">
+        {% for log in user_downloads %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <a href="{% url 'material_detail' log.material.id %}" class="fw-bold text-decoration-none">{{ log.material.title }}</a>
+              <div class="text-muted small">{{ log.material.category }} • Downloaded on {{ log.download_date }}</div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted fst-italic">You haven't downloaded any materials yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="mb-5">
+    <h4 class="mb-3">Favourites</h4>
+    {% if user_favourites %}
+      <ul class="list-group shadow-sm">
+        {% for favourite in user_favourites %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <a href="{% url 'material_detail' favourite.id %}" class="fw-bold text-decoration-none">{{ favourite.title }}</a>
+              <div class="text-muted small">{{ favourite.category }}</div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted fst-italic">You haven't favourited any materials yet.</p>
+    {% endif %}
+  </div>
+</div>
 
 {% endblock %}
