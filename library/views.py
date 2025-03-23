@@ -34,7 +34,7 @@ def material_list(request):
 
 def material_detail(request, material_id):
     material = get_object_or_404(Material, id=material_id)
-    reviews = material.reviews.all()
+    reviews = material.reviews.all().order_by('-created_at')
     form = ReviewForm()
 
     print("Material File URL:", material.file.url if material.file else "No file uploaded")
@@ -120,10 +120,14 @@ def add_review(request, material_id):
             review.user = request.user
             review.material = material
             review.save()
-            return redirect('material_detail', material_id=material.id)
-    else:
-        form = ReviewForm()
-    return render(request, 'library/add_review.html', {'form': form, 'material': material})
+            return JsonResponse({
+                "success": True,
+                "username": request.user.username,
+                "rating": review.rating,
+                "comment": review.comment,
+                "created_at": review.created_at.strftime("%Y-%m-%d %H:%M")
+            })
+    return JsonResponse({"success": False})
 
 @login_required(login_url='login')
 def user_dashboard(request):
@@ -137,24 +141,15 @@ def user_dashboard(request):
 def register(request):
     if request.method == "POST":
         form = SimpleUserCreationForm(request.POST)
-        profile_form = UserProfileForm(request.POST, request.FILES)
-        if form.is_valid() and profile_form.is_valid():
+        if form.is_valid():
             user = form.save()
-            # user.set_password(user.password)
             user.save()
-
-            profile = profile_form.save(commit = False)
-            profile.user = user
-            if 'picture' in request.FILES:
-                profile.picture = request.FILES['picture']
-            profile.save()
-
             messages.success(request, "Account created successfully. Please log in.")
             return redirect('login')
     else:
-        profile_form = UserProfileForm()
         form = SimpleUserCreationForm()
-    return render(request, 'library/register.html', {'form': form, 'profile_form': profile_form})
+
+    return render(request, 'library/register.html', {'form': form})
 
 def user_login(request):
     if request.method == "POST":
@@ -163,9 +158,12 @@ def user_login(request):
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
             user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('home')
+            if user:
+                if user.is_active:
+                    login(request, user)
+                    return redirect('home')
+                else:
+                    messages.error(request, "Your account has been disabled.")
             else:
                 messages.error(request, "Invalid username or password.")
     else:
@@ -189,19 +187,6 @@ def upload_material(request):
     else:
         form = MaterialForm()
     return render(request, 'library/upload_material.html', {'form': form})
-
-@login_required(login_url='login')
-def add_review(request, material_id):
-    material = get_object_or_404(Material, id=material_id)
-    if request.method == "POST":
-        form = ReviewForm(request.POST)
-        if form.is_valid():
-            review = form.save(commit=False)
-            review.user = request.user
-            review.material = material
-            review.save()
-            return redirect('material_detail', material_id=material.id)
-    return redirect('material_detail', material_id=material.id)
 
 @login_required(login_url='login')
 def user_dashboard(request):
