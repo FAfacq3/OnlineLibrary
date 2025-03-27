@@ -176,7 +176,7 @@ def edit_profile(request):
         form = UserProfileForm(instance=profile)
 
     return render(request, 'library/edit_profile.html', {
-        'form': form，
+        'form': form,
         'user_profile': profile
     })
 
