@@ -3,11 +3,12 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import FileResponse, HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from .models import Material, DownloadLog, UserProfile
-from .forms import MaterialForm, ReviewForm, SimpleUserCreationForm, UserProfileForm
-from django.contrib.auth import authenticate, login, logout
+from .forms import MaterialForm, ReviewForm, SimpleUserCreationForm, UserProfileForm, ChangePasswordForm
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
-from django.db.models import Avg
+from django.db.models import Avg, Q
+
 import random
 
 
@@ -137,11 +138,13 @@ def user_dashboard(request):
     user_downloads = DownloadLog.objects.filter(user=request.user).order_by('-download_date')
     user_profile = get_object_or_404(UserProfile, user=request.user)
     user_favourites = user_profile.favourites.all()
+    password_form = ChangePasswordForm(user=request.user)
     return render(request, 'library/dashboard.html', {
         'user_materials': user_materials,
         "user_favourites": user_favourites,
         'user_downloads':user_downloads,
-        'user_profile': user_profile
+        'user_profile': user_profile,
+        'password_form': password_form
     })
 
 def txt_preview(request, material_id):
@@ -239,3 +242,28 @@ def upload_material(request):
         form = MaterialForm()
     return render(request, 'library/upload_material.html', {'form': form})
 
+def search_suggestions(request):
+    query = request.GET.get("q", "")
+    results = []
+    if query:
+        materials = Material.objects.filter(
+            Q(title__icontains=query) | Q(description__icontains=query)
+        )[:5]
+        results = [material.title for material in materials]
+
+    return JsonResponse(results, safe=False)
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = ChangePasswordForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, 'Password changed successfully.')
+            return redirect('dashboard')
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        form = ChangePasswordForm(user=request.user)
+    return redirect('dashboard')

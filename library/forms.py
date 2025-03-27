@@ -1,6 +1,6 @@
 from django import forms
 from .models import Material, Review, UserProfile
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.models import User
 
 class MaterialForm(forms.ModelForm):
@@ -69,3 +69,12 @@ class UserProfileForm(forms.ModelForm):
                 'id': 'id_birth_date'
             }),
         }
+
+class ChangePasswordForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            self.fields[field_name].widget.attrs.update({
+                'class': 'form-control',
+                'placeholder': self.fields[field_name].label
+            })

@@ -17,7 +17,8 @@
                 <a class="navbar-brand" href="{% url 'home' %}">Online Library</a>
                 <form class="d-flex" method="GET" action="{% url 'material_list' %}">
                     {% if request.resolver_match.url_name != 'home' %}
-                        <input class="form-control me-2" type="search" name="q" placeholder="Search materials..." value="{{ request.GET.q }}">
+                        <input class="form-control me-2" type="search" id="search-input" name="q" placeholder="Search materials..." autocomplete="off">
+                        <ul id="suggestions" class="list-group position-absolute z-3" style="top: 100%; left: 0; width: 100%; display: none;"></ul>
                         <button class="btn btn-outline-light" type="submit">Search</button>
                     {% endif %}
                 </form>
@@ -98,6 +99,42 @@
         </div>
       </div>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        $("#search-input").keyup(function () {
+          const query = $(this).val();
+          if (query.length > 1) {
+            $.ajax({
+              url: "{% url 'search_suggestions' %}",
+              data: { term: query },
+              dataType: "json",
+              success: function (data) {
+                let suggestions = $("#suggestions");
+                suggestions.empty().show();
+                data.forEach(function (item) {
+                  suggestions.append(`<li class="list-group-item suggestion-item" style="cursor:pointer">${item}</li>`);
+                });
+
+                $(".suggestion-item").on("click", function () {
+                  $("#search-input").val($(this).text());
+                  suggestions.hide();
+                });
+              }
+            });
+          } else {
+            $("#suggestions").hide();
+          }
+        });
+
+        $(document).click(function (e) {
+          if (!$(e.target).closest('#search-input, #suggestions').length) {
+            $("#suggestions").hide();
+          }
+        });
+      });
+    </script>
 
 </body>
 
