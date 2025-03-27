@@ -9,7 +9,7 @@
     <div class="col-md-4 mb-4 text-center">
       <h5>Current Avatar</h5>
       {% if request.user.userprofile.picture %}
-        <img src="{{ request.user.userprofile.picture.url }}"
+        <img src="{{ request.user.profile.picture.url }}"
              alt="Current Avatar"
              class="rounded-circle img-thumbnail mb-3"
              style="width: 150px; height: 150px; object-fit: cover;">
